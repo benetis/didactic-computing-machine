@@ -7,6 +7,7 @@ import { AppComponent } from './app.component';
 import {routes} from './app.routes';
 import {RouterModule} from '@angular/router';
 import {ProductsModule} from './+products/products.module';
+import {ProductsService} from './services/products.service';
 
 @NgModule({
   declarations: [
@@ -19,7 +20,7 @@ import {ProductsModule} from './+products/products.module';
     ProductsModule,
     RouterModule.forRoot(routes)
   ],
-  providers: [],
+  providers: [ProductsService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

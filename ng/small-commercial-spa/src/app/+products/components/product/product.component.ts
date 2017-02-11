@@ -2,8 +2,8 @@ import {ChangeDetectionStrategy, Component, Input, OnInit} from '@angular/core';
 
 @Component({
   selector: 'spa-item',
-  templateUrl: './item.component.html',
-  styleUrls: ['./item.component.css'],
+  templateUrl: 'product.component.html',
+  styleUrls: ['product.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ItemComponent {

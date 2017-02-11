@@ -1,10 +1,10 @@
 import {ChangeDetectionStrategy, Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
-import {ItemColor, ItemFilter} from '../../classes/item';
+import {ItemColor, ItemFilter} from '../../../classes/item';
 
 @Component({
   selector: 'spa-item-filters',
-  templateUrl: './item-filter.component.html',
-  styleUrls: ['./item-filter.component.css'],
+  templateUrl: 'product-filter.component.html',
+  styleUrls: ['product-filter.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ItemFilterComponent implements OnInit {

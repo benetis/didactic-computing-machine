@@ -1,10 +1,10 @@
 import {ChangeDetectionStrategy, Component, Input, OnInit} from '@angular/core';
-import {Item, ItemFilter} from '../../classes/item';
+import {Item, ItemFilter} from '../../../classes/product';
 
 @Component({
   selector: 'spa-item-list',
-  templateUrl: './item-list.component.html',
-  styleUrls: ['./item-list.component.css'],
+  templateUrl: 'product-list.component.html',
+  styleUrls: ['product-list.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
 
 })
