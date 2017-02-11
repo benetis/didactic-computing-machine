@@ -9,8 +9,13 @@ import {Item} from './classes/item';
 export class LandingComponent implements OnInit {
 
   public items: Item[] = [
-    <Item>{name: 'Some item1', price: 123.09},
-    <Item>{name: 'Name of item', price: 99.09},
+    <Item>{name: 'Blue item', price: 123.09, colors: ['blue']},
+    <Item>{name: 'Green item', price: 99.09, colors: ['green']},
+    <Item>{name: 'Green and gray', price: 99.09, colors: ['green', 'gray']},
+    <Item>{name: 'Blue and gray', price: 99.09, colors: ['blue', 'gray']},
+    <Item>{name: 'Green and blue', price: 99.09, colors: ['green', 'blue']},
+    <Item>{name: 'Green and blue', price: 99.09, colors: ['green', 'blue']},
+    <Item>{name: 'Gray', price: 99.09, colors: ['gray']},
   ];
 
   constructor() { }

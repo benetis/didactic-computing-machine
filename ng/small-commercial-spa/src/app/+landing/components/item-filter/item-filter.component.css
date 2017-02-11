@@ -1,0 +1,14 @@
+.filter-box {
+  width: 1em;
+  height: 1em;
+  margin: 0.2em;
+}
+
+.filter-list {
+  display: flex;
+  flex-direction: row-reverse;
+}
+
+.filter-activated {
+  border: 3px red solid;
+}

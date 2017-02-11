@@ -6,18 +6,12 @@ import {ChangeDetectionStrategy, Component, Input, OnInit} from '@angular/core';
   styleUrls: ['./item.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ItemComponent implements OnInit {
+export class ItemComponent {
 
   @Input() public id: number;
   @Input() public name: string;
   @Input() public price: number;
   @Input() public currency: string;
-
-  constructor() {
-  }
-
-  ngOnInit() {
-  }
 
   public getCurrency(): string {
     return 'USD';

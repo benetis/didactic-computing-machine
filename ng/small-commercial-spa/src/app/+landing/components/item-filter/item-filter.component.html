@@ -1,0 +1,9 @@
+<div class="filter-list">
+  <div *ngFor="let filter of availableFilters">
+    <div class="filter-box"
+         [ngStyle]="{ 'background-color': filterColor(filter.color)}"
+         [ngClass]="{ 'filter-activated': filterActive(filter)}"
+         (click)="changeFilterStatus(filter)"
+    ></div>
+  </div>
+</div>

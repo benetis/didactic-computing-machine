@@ -6,6 +6,6 @@ export class SmallCommercialSpaPage {
   }
 
   getParagraphText() {
-    return element(by.css('app-root h1')).getText();
+    return element(by.css('spa-root h1')).getText();
   }
 }

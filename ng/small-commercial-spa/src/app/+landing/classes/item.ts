@@ -8,3 +8,7 @@ export interface Item {
   colors?: ItemColor[];
   picture?: string;
 }
+
+export interface ItemFilter {
+  color?: ItemColor;
+}

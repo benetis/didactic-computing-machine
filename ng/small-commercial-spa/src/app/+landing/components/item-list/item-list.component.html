@@ -1,5 +1,17 @@
-<spa-item *ngFor="let item of items"
-          [name]="item.name"
-          [price]="item.price"
-          [currency]="item.currency"
-></spa-item>
+<div class="list-filter">
+  <spa-item-filters
+    [availableFilters]="filters"
+    [activatedFilters]="activeFilters"
+    (activeFilters)="updateActivatedFilters($event)"
+  ></spa-item-filters>
+</div>
+<div class="list-items">
+  <div class="list-item" *ngFor="let item of itemsAfterFilter()">
+    <spa-item
+      [name]="item.name"
+      [price]="item.price"
+      [currency]="item.currency">
+    </spa-item>
+  </div>
+</div>
+
