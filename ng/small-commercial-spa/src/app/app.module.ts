@@ -6,7 +6,7 @@ import { HttpModule } from '@angular/http';
 import { AppComponent } from './app.component';
 import {routes} from './app.routes';
 import {RouterModule} from '@angular/router';
-import {LandingModule} from './+landing/landing.module';
+import {ProductsModule} from './+products/products.module';
 
 @NgModule({
   declarations: [
@@ -16,7 +16,7 @@ import {LandingModule} from './+landing/landing.module';
     BrowserModule,
     FormsModule,
     HttpModule,
-    LandingModule,
+    ProductsModule,
     RouterModule.forRoot(routes)
   ],
   providers: [],

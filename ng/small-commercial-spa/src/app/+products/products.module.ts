@@ -1,23 +1,28 @@
 import {NgModule} from '@angular/core';
 import {CommonModule} from '@angular/common';
-import {LandingComponent} from './landing.component';
+import {ProductsComponent} from './products.component';
 import { ItemListComponent } from './components/item-list/item-list.component';
 import { ItemComponent } from './components/item/item.component';
 import { ItemFilterComponent } from './components/item-filter/item-filter.component';
+import { ItemDetailsComponent } from './components/item-details/item-details.component';
+import {RouterModule} from '@angular/router';
+import {routes} from './products.routes';
 
 @NgModule({
   imports: [
-    CommonModule
+    CommonModule,
+    RouterModule.forChild(routes)
   ],
   declarations: [
-    LandingComponent,
+    ProductsComponent,
     ItemListComponent,
     ItemComponent,
-    ItemFilterComponent
+    ItemFilterComponent,
+    ItemDetailsComponent,
   ],
   exports: [
-    LandingComponent
+    ProductsComponent
   ]
 })
-export class LandingModule {
+export class ProductsModule {
 }

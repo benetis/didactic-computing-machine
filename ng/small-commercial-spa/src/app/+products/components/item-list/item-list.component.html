@@ -8,6 +8,7 @@
 <div class="list-items">
   <div class="list-item" *ngFor="let item of itemsAfterFilter()">
     <spa-item
+      [id]="item.id"
       [name]="item.name"
       [price]="item.price"
       [currency]="item.currency">
