@@ -1,14 +1,14 @@
-export type ItemColor = 'blue' | 'green' | 'gray';
+export type ProductColor = 'blue' | 'green' | 'gray';
 
-export interface Item {
+export interface Product {
   id?: number;
   name?: string;
   price?: number;
   currency?: string;
-  colors?: ItemColor[];
+  colors?: ProductColor[];
   picture?: string;
 }
 
-export interface ItemFilter {
-  color?: ItemColor;
+export interface ProductFilter {
+  color?: ProductColor;
 }

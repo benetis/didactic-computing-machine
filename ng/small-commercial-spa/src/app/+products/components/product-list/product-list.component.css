@@ -1,4 +1,4 @@
-.list-items {
+.list-products {
   display: flex;
 
   justify-content: center;
@@ -7,7 +7,7 @@
   align-content: flex-end;
 }
 
-.list-item {
+.list-product {
   margin-left: 10px;
   margin-right: 10px;
 }

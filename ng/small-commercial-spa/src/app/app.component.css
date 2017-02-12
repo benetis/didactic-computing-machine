@@ -1,0 +1,21 @@
+.color-box {
+  width: 1em;
+  height: 1em;
+  margin: 0.2em;
+}
+
+.open-shopping-cart {
+  font-size: 2rem;
+  position: absolute;
+  right: 15px;
+}
+
+.nav-bar {
+  position: relative;
+  height: 40px;
+}
+
+.back-button {
+  position: absolute;
+  left: 15px;
+}

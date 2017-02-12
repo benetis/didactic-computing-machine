@@ -1,10 +1,10 @@
 import {NgModule} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {ProductsComponent} from './products.component';
-import { ItemListComponent } from './components/product-list/product-list.component';
-import { ItemComponent } from './components/product/product.component';
-import { ItemFilterComponent } from './components/product-filter/product-filter.component';
-import { ItemDetailsComponent } from './components/product-details/product-details.component';
+import { ProductListComponent } from './components/product-list/product-list.component';
+import { ProductComponent } from './components/product/product.component';
+import { ProductFilterComponent } from './components/product-filter/product-filter.component';
+import { ProductDetailsComponent } from './components/product-details/product-details.component';
 import {RouterModule} from '@angular/router';
 import {routes} from './products.routes';
 
@@ -15,10 +15,10 @@ import {routes} from './products.routes';
   ],
   declarations: [
     ProductsComponent,
-    ItemListComponent,
-    ItemComponent,
-    ItemFilterComponent,
-    ItemDetailsComponent,
+    ProductListComponent,
+    ProductComponent,
+    ProductFilterComponent,
+    ProductDetailsComponent,
   ],
   exports: [
     ProductsComponent

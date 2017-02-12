@@ -1,10 +1,15 @@
-import { Component } from '@angular/core';
+import {Component, ViewEncapsulation} from '@angular/core';
+import {Location, LocationStrategy, PathLocationStrategy} from '@angular/common';
 
 @Component({
   selector: 'spa-root',
   templateUrl: './app.component.html',
-  styleUrls: ['./app.component.css']
+  styleUrls: ['./app.component.css'],
+  encapsulation: ViewEncapsulation.None
 })
 export class AppComponent {
-  title = 'app works!';
+
+  constructor(public location: Location) {
+  }
+
 }

@@ -1,8 +1,6 @@
-import {NgModule} from '@angular/core';
-import {Routes, RouterModule} from '@angular/router';
+import {Routes} from '@angular/router';
 import {ProductsComponent} from './products.component';
-import {ItemDetailsComponent} from './components/product-details/product-details.component';
-import {ItemListComponent} from './components/product-list/product-list.component';
+import {ProductDetailsComponent} from './components/product-details/product-details.component';
 
 export const routes: Routes = [
   {
@@ -16,10 +14,6 @@ export const routes: Routes = [
   },
   {
     path: 'details/:id',
-    component: ItemDetailsComponent
+    component: ProductDetailsComponent
   }
-  // {
-  //   path: 'lazy',
-  //   loadChildren: './lazy/lazy.module#LazyModule'
-  // }
 ];

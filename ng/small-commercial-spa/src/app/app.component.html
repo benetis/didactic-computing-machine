@@ -1,2 +1,7 @@
-<h3>Landing page</h3>
+<div class="nav-bar">
+  <a *ngIf="location.path() !== '/list'" routerLink="/" class="back-button">Back</a>
+  <a class="open-shopping-cart">
+    <i class="fa fa-shopping-cart"></i>
+  </a>
+</div>
 <router-outlet></router-outlet>

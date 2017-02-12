@@ -1,24 +1,24 @@
 import {ChangeDetectionStrategy, Component, Input, OnInit} from '@angular/core';
-import {Item, ItemFilter} from '../../../classes/product';
+import {Product, ProductFilter} from '../../../classes/product';
 
 @Component({
-  selector: 'spa-item-list',
+  selector: 'spa-product-list',
   templateUrl: 'product-list.component.html',
   styleUrls: ['product-list.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
 
 })
-export class ItemListComponent implements OnInit {
+export class ProductListComponent implements OnInit {
 
-  @Input() public items: Item[] = [];
+  @Input() public items: Product[] = [];
 
-  public readonly filters: ItemFilter[] = [
-    <ItemFilter>{color: 'blue'},
-    <ItemFilter>{color: 'green'},
-    <ItemFilter>{color: 'gray'},
+  public readonly filters: ProductFilter[] = [
+    <ProductFilter>{color: 'blue'},
+    <ProductFilter>{color: 'green'},
+    <ProductFilter>{color: 'gray'},
   ];
 
-  public activeFilters: ItemFilter[] = [];
+  public activeFilters: ProductFilter[] = [];
 
   constructor() {
   }
@@ -26,8 +26,8 @@ export class ItemListComponent implements OnInit {
   ngOnInit() {
   }
 
-  public itemsAfterFilter(): Item[] {
-    return this.items.filter((item: Item) => {
+  public itemsAfterFilter(): Product[] {
+    return this.items.filter((item: Product) => {
       const matchesActiveFilter: boolean = this.activeFilters.reduce((prev, curr) => {
         if (item.colors.includes(curr.color)) {
           return prev && true;
@@ -40,7 +40,7 @@ export class ItemListComponent implements OnInit {
     });
   }
 
-  public updateActivatedFilters(filters: ItemFilter[]) {
+  public updateActivatedFilters(filters: ProductFilter[]) {
     this.activeFilters = filters;
   }
 }

@@ -8,19 +8,23 @@ import {routes} from './app.routes';
 import {RouterModule} from '@angular/router';
 import {ProductsModule} from './+products/products.module';
 import {ProductsService} from './services/products.service';
+import {CartService} from './services/cart.service';
+import {Location, CommonModule} from '@angular/common';
+
 
 @NgModule({
   declarations: [
-    AppComponent
+    AppComponent,
   ],
   imports: [
+    CommonModule,
     BrowserModule,
     FormsModule,
     HttpModule,
     ProductsModule,
     RouterModule.forRoot(routes)
   ],
-  providers: [ProductsService],
+  providers: [ProductsService, CartService, Location],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

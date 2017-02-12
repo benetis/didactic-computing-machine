@@ -1,7 +1,10 @@
-<div class="item-image">
-  <i class="fa fa-picture-o fa-6"></i>
+<div class="product-image">
+  <i class="fa fa-picture-o" [ngStyle]="{ 'font-size': size+'em'}"></i>
 </div>
-<div class="item-name">{{name}}</div>
-<div class="item-price">
+<div class="item-name">
+  <a routerLink="/products/details/{{id}}">{{name}}</a>
+</div>
+
+<div class="product-price">
   {{getCurrency()}}{{price}}
 </div>

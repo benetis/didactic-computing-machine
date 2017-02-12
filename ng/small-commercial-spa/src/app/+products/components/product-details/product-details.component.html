@@ -1,3 +1,17 @@
-<p>
-  item-details works!{{id}}
-</p>
+<div class="product-details">
+  <div class="product">
+  <spa-product [name]="product.name"
+               [size]="'3'"
+               [price]="product.price"
+  ></spa-product>
+  <div class="color-list">
+    <div *ngFor="let color of product.colors"
+         class="color-box"
+         [ngStyle]="{'background-color': color}"
+    ></div>
+  </div>
+    <button class="add-to-cart" (click)="addToCart(product)">
+      Add to bag
+    </button>
+  </div>
+</div>

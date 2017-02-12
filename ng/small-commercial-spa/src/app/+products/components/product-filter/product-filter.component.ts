@@ -1,17 +1,17 @@
 import {ChangeDetectionStrategy, Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
-import {ItemColor, ItemFilter} from '../../../classes/item';
+import {ProductColor, ProductFilter} from '../../../classes/product';
 
 @Component({
-  selector: 'spa-item-filters',
+  selector: 'spa-product-filters',
   templateUrl: 'product-filter.component.html',
   styleUrls: ['product-filter.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ItemFilterComponent implements OnInit {
+export class ProductFilterComponent implements OnInit {
 
-  @Input() availableFilters: ItemFilter[] = [];
-  @Input() activatedFilters: ItemFilter[] = [];
-  @Output() activeFilters: EventEmitter<ItemFilter[]> = new EventEmitter<ItemFilter[]>();
+  @Input() availableFilters: ProductFilter[] = [];
+  @Input() activatedFilters: ProductFilter[] = [];
+  @Output() activeFilters: EventEmitter<ProductFilter[]> = new EventEmitter<ProductFilter[]>();
 
   constructor() {
   }
@@ -19,20 +19,11 @@ export class ItemFilterComponent implements OnInit {
   ngOnInit() {
   }
 
-  public filterColor(color: ItemColor): string {
-    const colors = {
-      'blue': 'blue',
-      'green': 'green',
-      'gray': 'gray'
-    };
-    return colors[color];
-  }
-
-  public filterActive(filter: ItemFilter): boolean {
+  public filterActive(filter: ProductFilter): boolean {
     return this.activatedFilters.find(_ => _.color === filter.color) != null;
   }
 
-  public changeFilterStatus(filter: ItemFilter) {
+  public changeFilterStatus(filter: ProductFilter) {
     this.activeFilters.emit([filter]);
   }
 }
