@@ -4,12 +4,7 @@
                [size]="'3'"
                [price]="product.price"
   ></spa-product>
-  <div class="color-list">
-    <div *ngFor="let color of product.colors"
-         class="color-box"
-         [ngStyle]="{'background-color': color}"
-    ></div>
-  </div>
+    <spa-color-list [colors]="product.colors"></spa-color-list>
     <button class="add-to-cart" (click)="addToCart(product)">
       Add to bag
     </button>

@@ -1,7 +1,7 @@
 <div class="nav-bar">
-  <a *ngIf="location.path() !== '/list'" routerLink="/" class="back-button">Back</a>
-  <a class="open-shopping-cart">
-    <i class="fa fa-shopping-cart"></i>
-  </a>
+  <a *ngIf="location.path() !== '/products'" routerLink="/" class="back-button">Back</a>
+  <div class="open-shopping-cart" routerLink="/products/cart">
+    <i class="fa fa-shopping-cart">{{(shoppingCartItems$ | async).length}}</i>
+  </div>
 </div>
 <router-outlet></router-outlet>

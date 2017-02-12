@@ -6,7 +6,6 @@ import {Product, ProductFilter} from '../../../classes/product';
   templateUrl: 'product-list.component.html',
   styleUrls: ['product-list.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
-
 })
 export class ProductListComponent implements OnInit {
 

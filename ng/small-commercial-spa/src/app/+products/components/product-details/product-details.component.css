@@ -9,10 +9,6 @@
   align-items: center;
 }
 
-.color-list {
-  display: flex;
-}
-
 .add-to-cart {
   margin-top: 5px;
   display:inline-block;

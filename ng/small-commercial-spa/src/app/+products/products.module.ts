@@ -7,6 +7,8 @@ import { ProductFilterComponent } from './components/product-filter/product-filt
 import { ProductDetailsComponent } from './components/product-details/product-details.component';
 import {RouterModule} from '@angular/router';
 import {routes} from './products.routes';
+import { ShoppingCartComponent } from './components/shopping-cart/shopping-cart.component';
+import { ColorListComponent } from './components/color-list/color-list.component';
 
 @NgModule({
   imports: [
@@ -19,6 +21,8 @@ import {routes} from './products.routes';
     ProductComponent,
     ProductFilterComponent,
     ProductDetailsComponent,
+    ShoppingCartComponent,
+    ColorListComponent,
   ],
   exports: [
     ProductsComponent

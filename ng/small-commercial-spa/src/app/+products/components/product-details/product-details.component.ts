@@ -1,5 +1,5 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
-import {ActivatedRoute} from '@angular/router';
+import {ActivatedRoute, Router} from '@angular/router';
 import {ProductsService} from '../../../services/products.service';
 import {Product} from '../../../classes/product';
 import {CartService} from '../../../services/cart.service';
@@ -13,6 +13,7 @@ export class ProductDetailsComponent implements OnInit {
   public product: Product = {};
 
   constructor(private route: ActivatedRoute
+    , private router: Router
     , private productsService: ProductsService
     , private cartService: CartService) {
   }
@@ -20,11 +21,14 @@ export class ProductDetailsComponent implements OnInit {
   ngOnInit() {
     this.route.params.subscribe(params => {
       const id = +params['id'];
-      this.product = this.productsService.getProduct(id);
+      this.productsService
+        .getProduct(id)
+        .subscribe(_ => this.product = _)
     });
   }
 
   public addToCart(product: Product) {
     this.cartService.addToCart(product);
+    this.router.navigateByUrl('/');
   }
 }
