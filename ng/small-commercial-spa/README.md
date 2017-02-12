@@ -7,3 +7,5 @@ Simple application featuring:
 - Add to cart functionality
 - Shopping cart view
 - Product details
+
+![alt text](https://media.giphy.com/media/26xBKzxfvveYuwtWw/giphy.gif)

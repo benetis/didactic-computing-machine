@@ -14,5 +14,7 @@ fib n = fib(n-2) + fib(n-1)
 lessThan :: Integer -> Bool
 lessThan x = fib x < 4000000
 
+termsUnder4Mil ::
+
 main :: IO ()
 main = print $ takeWhile lessThan [1..]
