@@ -1,0 +1,9 @@
+.idea/
+out/
+cat-inverter.iml
+*/**/.DS_Store
+.DS_Store
+.gitignore
+best_cat_ppm_ascii.ppm
+inverted-cat.ppm
+src/
