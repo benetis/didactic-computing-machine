@@ -1,8 +1,12 @@
+import ID3.{entropy, splitByParam}
+
 object ID3 extends App {
 
   case class Node(value: Option[String])
 
   type TrainingInstance = Vector[String]
+
+  type Param = String
 
   val names = Vector("x1", "x2", "x3", "x4", "Class")
 
@@ -39,41 +43,43 @@ object ID3 extends App {
 
     if (hasOnlyOneClass(subset)) {
       subset.head.last //Return Class
+    } else {
+//      //Check which parameter has best entropy
+
+
+      val entropyForEachParam: Vector[(Param, Double)] = {
+        names.dropRight(1).zipWithIndex.map { case (paramName, i) => //-1 for class
+          paramName -> splitByParam(subset, i).map {
+            case (param, set: Vector[TrainingInstance]) =>
+              entropy(set)
+          }.sum
+        }
+      }
+
+      val x = 1
+
     }
+
   }
 
-  /**
-    * Split into subsets for specific param
-    * Find how many different classes in subset
-    */
-  def informationGain(subset: Vector[TrainingInstance],
-                      nthParam: Int): Double = {
+  def splitByParam(subset: Vector[TrainingInstance], nthParam: Int): Map[Param, Vector[TrainingInstance]] =
+    subset.groupBy(identity((x: TrainingInstance) => x(nthParam)))
 
-    type Param = String
-    val splitByParam: Map[Param, Vector[TrainingInstance]] =
-      subset.groupBy(identity((x: TrainingInstance) => x(nthParam)))
+
+  def entropy(subset: Vector[TrainingInstance]): Double = {
 
     val log2 = (x: Double) => scala.math.log10(x) / scala.math.log10(2.0)
 
-    val setEntropy = splitByParam.map {
-      case (param, set: Vector[TrainingInstance]) =>
-        val classesCount = set.map(_.last).groupBy(identity)
+    val classesCount = subset.map(_.last).groupBy(identity)
 
-        val wholeSet: Double = subset.size
+    val thisSetSize: Double = classesCount.map(_._2.size).sum
 
-        val thisSetSize: Double = classesCount.map(_._2.size).sum
+    val entropy = classesCount.foldLeft(0.0d) {
+      case (res: Double, (_, iSet: Vector[String])) =>
+        res + log2(iSet.size / thisSetSize) * (iSet.size / thisSetSize)
+    } * -1
 
-        val probabilityThisSetTaken = thisSetSize / wholeSet
-
-        val entropy = classesCount.foldLeft(0.0d) {
-          case (res: Double, (_, iSet: Vector[String])) =>
-            res + log2(iSet.size / thisSetSize) * (iSet.size / thisSetSize)
-        } * -1
-
-        probabilityThisSetTaken * entropy
-    }
-
-    setEntropy.sum
+    entropy
   }
 
 }
