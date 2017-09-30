@@ -1,12 +1,44 @@
-import ID3.Node
+import ID3.{Leaf, Node, Param}
 import org.scalatest.FreeSpec
 
+/**
+  * Some examples for tests taken from Gailius Raskinis Machine learning course @VDU
+  */
 class ID3Test extends FreeSpec {
   "Divide and conquer" - {
     "return same class as element if passed one trainingSet" in {
 
-      assert(ID3.divide_and_conquer(Vector(Vector("param1", "class")),
-                                    Node(None)) === "class")
+      assert(
+        ID3.divide_and_conquer(Vector(
+                                 Param(0, "p"),
+                                 Param(1, "c")
+                               ),
+                               Vector(Vector("param1", "class")),
+                               Node(None)()) === Leaf("class"))
+    }
+
+    "return nodes attached to root node if passed few training sets" in {
+
+      assert(
+        ID3.divide_and_conquer(
+          Vector(Param(0, "size"),
+                 Param(1, "hair"),
+                 Param(2, "eyes"),
+                 Param(3, "class")),
+          Vector(
+            Vector("m", "g", "m", "+"),
+            Vector("d", "g", "r", "-"),
+            Vector("d", "r", "m", "+"),
+            Vector("m", "j", "m", "-"),
+            Vector("d", "j", "m", "-"),
+            Vector("d", "g", "m", "+"),
+            Vector("d", "j", "r", "-"),
+            Vector("m", "g", "r", "-")
+          ),
+          Node(None)()
+        ) ===
+          Node(None)()
+      )
     }
   }
 
@@ -81,7 +113,7 @@ class ID3Test extends FreeSpec {
             Vector("d", "j", "-"),
             Vector("m", "g", "-")
           ),
-          1
+          Param(1, "hair")
         ) === Map(
           "g" -> Vector(
             Vector("m", "g", "+"),
