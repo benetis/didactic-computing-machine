@@ -14,7 +14,7 @@ object ID3 extends App {
       }
     }
 
-//    val children = Seq()
+    val value: Option[String]
   }
 
   case class Node(value: Option[String], children: Seq[Tree])(implicit dummy: Manifest[Node]) extends Tree
@@ -23,7 +23,7 @@ object ID3 extends App {
     def apply(value: Option[String])(children: Tree*) = new Node(value, children)
   }
 
-  case class Leaf(value: String) extends Tree
+  case class Leaf(value: Option[String]) extends Tree
 
   case class Param(id: Int, name: String)
 
@@ -81,7 +81,7 @@ object ID3 extends App {
     }
 
     if (hasOnlyOneClass(subset)) {
-      Leaf(subset.head.last) //Return Class
+      Leaf(Some(subset.head.last)) //Return Class
     } else {
 
       val dividedSubsets: Map[String, Vector[TrainingInstance]] =
@@ -96,7 +96,7 @@ object ID3 extends App {
 
 
       Node(
-        None
+        Some(bestParameterToDivide()._1.name)
       )(
         newNodes.map {
           case (newSet, node: Tree) => {
