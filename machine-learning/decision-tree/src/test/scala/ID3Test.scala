@@ -15,7 +15,9 @@ class ID3Test extends FreeSpec {
                                  Param(1, "c")
                                ),
                                Vector(Vector("param1", "class")),
-                               Node(None)()) === Leaf(Some("class")))
+                               Node(None, None)(),
+                               Some(Param(0, "p"))) === Leaf(Some("class"),
+                                                             Some("param1")))
     }
 
     "return nodes attached to root node if passed few training sets" in {
@@ -36,12 +38,18 @@ class ID3Test extends FreeSpec {
             Vector("d", "j", "r", "-"),
             Vector("m", "g", "r", "-")
           ),
-          Node(None)()
+          Node(None, None)()
         ) ===
-          Node(Some("hair"),
-               List(Leaf(Some("-")),
-                    Node(Some("eyes"), List(Leaf(Some("+")), Leaf(Some("-")))),
-                    Leaf(Some("+"))))
+          Node(
+            Some("hair"),
+            None,
+            List(Leaf(Some("-"), Some("j")),
+                 Node(Some("eyes"),
+                      None,
+                      List(Leaf(Some("+"), Some("m")),
+                           Leaf(Some("-"), Some("r")))),
+                 Leaf(Some("+"), Some("r")))
+          )
       )
     }
 
@@ -145,10 +153,16 @@ class ID3Test extends FreeSpec {
         ID3.classify(
           Vector(Param(0, "size"), Param(1, "hair"), Param(2, "eyes")),
           Vector("m", "j", "r"),
-          Node(Some("hair"),
-               List(Leaf(Some("-")),
-                    Node(Some("eyes"), List(Leaf(Some("+")), Leaf(Some("-")))),
-                    Leaf(Some("+"))))
+          Node(
+            Some("hair"),
+            None,
+            List(Leaf(Some("-"), Some("j")),
+                 Node(Some("eyes"),
+                      None,
+                      List(Leaf(Some("+"), Some("m")),
+                           Leaf(Some("-"), Some("r")))),
+                 Leaf(Some("+"), Some("r")))
+          )
         ) === "-"
       )
     }

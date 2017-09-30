@@ -15,18 +15,20 @@ object ID3 extends App {
     }
 
     val value: Option[String]
+
+    val feature: Option[String]
   }
 
-  case class Node(value: Option[String], children: Seq[Tree])(
+  case class Node(value: Option[String], feature: Option[String], children: Seq[Tree])(
       implicit dummy: Manifest[Node])
       extends Tree
 
   object Node {
-    def apply(value: Option[String])(children: Tree*) =
-      new Node(value, children)
+    def apply(value: Option[String], feature: Option[String])(children: Tree*) =
+      new Node(value, feature, children)
   }
 
-  case class Leaf(value: Option[String]) extends Tree
+  case class Leaf(value: Option[String], feature: Option[String]) extends Tree
 
   case class Param(id: Int, name: String)
 
@@ -54,7 +56,7 @@ object ID3 extends App {
   val paramNames = names.zipWithIndex.map { case (n, i) => Param(i, n) }
 
   def learning() = {
-    val rootNode = Node(None)()
+    val rootNode = Node(None, None)()
 
 
     divide_and_conquer(paramNames, inputValues, rootNode)
@@ -63,7 +65,8 @@ object ID3 extends App {
   def divide_and_conquer(
       names: Vector[Param],
       subset: Vector[TrainingInstance],
-      node: Tree
+      node: Tree,
+      param: Option[Param] = None
   ): Tree = {
 
     def hasOnlyOneClass(subset: Vector[TrainingInstance]): Boolean =
@@ -90,7 +93,7 @@ object ID3 extends App {
     }
 
     if (hasOnlyOneClass(subset)) {
-      Leaf(Some(subset.head.last)) //Return Class
+      Leaf(Some(subset.head.last), Some(subset.head(names.find(_.name == param.get.name).get.id))) //Return Class
     } else {
 
       val dividedSubsets: Map[String, Vector[TrainingInstance]] =
@@ -98,18 +101,19 @@ object ID3 extends App {
 
       val newNodes: Map[Vector[TrainingInstance], Node] = dividedSubsets.map {
         case (pName, newSet) =>
-          newSet -> Node(Some(pName))()
+          newSet -> Node(Some(pName), None)()
       }
 
       println(s"Divided into: ${newNodes.prettyPrint}")
 
       Node(
-        Some(bestParameterToDivide()._1.name)
+        Some(bestParameterToDivide()._1.name),
+        None
       )(
         newNodes.map {
           case (newSet, node: Tree) => {
             node.traverse(node)(println)
-            divide_and_conquer(names, newSet, node)
+            divide_and_conquer(names, newSet, node, Some(bestParameterToDivide()._1))
           }
         }.toSeq: _*
       )
@@ -143,8 +147,8 @@ object ID3 extends App {
 
   def classify(names: Vector[Param], trainingInstance: TrainingInstance, node: Tree): String = {
     node match {
-      case Leaf(value) => value.get
-      case Node(paramThatSplits: Option[String], children: Seq[Tree]) =>
+      case Leaf(value, _) => value.get
+      case Node(paramThatSplits: Option[String], _, children: Seq[Tree]) =>
 
         val paramConverted: Param = names.find(_.name == paramThatSplits.get).get
 
