@@ -159,4 +159,11 @@ object ID3 extends App {
     }
   }
 
+  println("----- Learning begin -----")
+  val resultTree = learning()
+  println("----- Learning end -----")
+  resultTree.traverse(resultTree)(println)
+  println("End")
+
+
 }
