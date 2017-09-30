@@ -5,6 +5,7 @@ import org.scalatest.FreeSpec
   * Some examples for tests taken from Gailius Raskinis Machine learning course @VDU
   */
 class ID3Test extends FreeSpec {
+
   "Divide and conquer" - {
     "return same class as element if passed one trainingSet" in {
 
@@ -43,7 +44,6 @@ class ID3Test extends FreeSpec {
                     Leaf(Some("+"))))
       )
     }
-
 
   }
 
@@ -135,6 +135,21 @@ class ID3Test extends FreeSpec {
             Vector("d", "j", "-")
           )
         )
+      )
+    }
+  }
+
+  "Classify" - {
+    "should return class of leaf if only leaf is passed" in {
+      assert(
+        ID3.classify(
+          Vector(Param(0, "size"), Param(1, "hair"), Param(2, "eyes")),
+          Vector("m", "j", "r"),
+          Node(Some("hair"),
+               List(Leaf(Some("-")),
+                    Node(Some("eyes"), List(Leaf(Some("+")), Leaf(Some("-")))),
+                    Leaf(Some("+"))))
+        ) === "-"
       )
     }
   }

@@ -17,10 +17,13 @@ object ID3 extends App {
     val value: Option[String]
   }
 
-  case class Node(value: Option[String], children: Seq[Tree])(implicit dummy: Manifest[Node]) extends Tree
+  case class Node(value: Option[String], children: Seq[Tree])(
+      implicit dummy: Manifest[Node])
+      extends Tree
 
   object Node {
-    def apply(value: Option[String])(children: Tree*) = new Node(value, children)
+    def apply(value: Option[String])(children: Tree*) =
+      new Node(value, children)
   }
 
   case class Leaf(value: Option[String]) extends Tree
@@ -43,10 +46,16 @@ object ID3 extends App {
     Vector("b", "c", "c", "b", "G")
   )
 
+  val testValues = Vector(
+    Vector("b", "b", "c", "d", "Y"),
+    Vector("b", "d", "b", "b", "R")
+  )
+
+  val paramNames = names.zipWithIndex.map { case (n, i) => Param(i, n) }
+
   def learning() = {
     val rootNode = Node(None)()
 
-    val paramNames = names.zipWithIndex.map { case (n, i) => Param(i, n) }
 
     divide_and_conquer(paramNames, inputValues, rootNode)
   }
@@ -94,7 +103,6 @@ object ID3 extends App {
 
       println(s"Divided into: ${newNodes.prettyPrint}")
 
-
       Node(
         Some(bestParameterToDivide()._1.name)
       )(
@@ -127,6 +135,30 @@ object ID3 extends App {
     } * -1
 
     entropy
+  }
+
+  def recognition(rulesTree: Tree) = {
+    classify(paramNames, testValues.head, rulesTree)
+  }
+
+  def classify(names: Vector[Param], trainingInstance: TrainingInstance, node: Tree): String = {
+    node match {
+      case Leaf(value) => value.get
+      case Node(paramThatSplits: Option[String], children: Seq[Tree]) =>
+
+        val paramConverted: Param = names.find(_.name == paramThatSplits.get).get
+
+        val paramValue = trainingInstance(paramConverted.id)
+
+        val neededChildNode = children.filter { c =>
+          (for {
+            childParam: String <- c.value
+            neededParam: String <- paramThatSplits
+          } yield childParam == neededParam).get
+        }.head
+
+        classify(names, trainingInstance, neededChildNode)
+    }
   }
 
   //https://stackoverflow.com/questions/32004050/pretty-print-a-nested-map-in-scala
@@ -163,7 +195,8 @@ object ID3 extends App {
   val resultTree = learning()
   println("----- Learning end -----")
   resultTree.traverse(resultTree)(println)
-  println("End")
-
+  println("----- Start recognition -----")
+  val testSet = recognition(resultTree)
+  println(testSet)
 
 }
