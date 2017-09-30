@@ -154,14 +154,9 @@ object ID3 extends App {
 
         val paramValue = trainingInstance(paramConverted.id)
 
-        val neededChildNode = children.filter { c =>
-          (for {
-            childParam: String <- c.value
-            neededParam: String <- paramThatSplits
-          } yield childParam == neededParam).get
-        }.head
+        val neededChildNode: Option[Tree] = children.find(_.feature.get == paramValue)
 
-        classify(names, trainingInstance, neededChildNode)
+        classify(names, trainingInstance, neededChildNode.get)
     }
   }
 

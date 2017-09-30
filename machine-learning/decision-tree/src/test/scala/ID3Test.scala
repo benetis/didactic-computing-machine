@@ -148,7 +148,7 @@ class ID3Test extends FreeSpec {
   }
 
   "Classify" - {
-    "should return class of leaf if only leaf is passed" in {
+    "should classify to - with specified tree" in {
       assert(
         ID3.classify(
           Vector(Param(0, "size"), Param(1, "hair"), Param(2, "eyes")),
