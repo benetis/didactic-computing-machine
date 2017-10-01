@@ -186,5 +186,32 @@ class ID3Test extends FreeSpec {
       )
     }
 
+    "should classify to be corgi with specified tree and test input" in {
+      assert(
+        ID3.classify(
+          Vector(
+            Param(0, "Hair"),
+            Param(1, "Size")
+          ),
+          Vector("fluff", "short"),
+          Node(
+            Some("Hair"),
+            None,
+            List(
+              Node(Some("Size"),
+                Some("short"),
+                List(Leaf(Some("chihuahua"), Some("small")),
+                  Leaf(Some("greyhound"), Some("big")))),
+              Leaf(Some("corgi"), Some("fluff")),
+              Node(Some("Size"),
+                Some("long"),
+                List(Leaf(Some("corgi"), Some("small")),
+                  Leaf(Some("shepherd"), Some("big"))))
+            )
+          )
+        ) === "corgi"
+      )
+    }
+
   }
 }
