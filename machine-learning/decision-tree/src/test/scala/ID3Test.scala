@@ -16,8 +16,8 @@ class ID3Test extends FreeSpec {
                                ),
                                Vector(Vector("param1", "class")),
                                Node(None, None)(),
-                               Some(Param(0, "p"))) === Leaf(Some("class"),
-                                                             Some("param1")))
+                               Some("param1")) === Leaf(Some("class"),
+                                                        Some("param1")))
     }
 
     "return nodes attached to root node if passed few training sets" in {
@@ -45,7 +45,7 @@ class ID3Test extends FreeSpec {
             None,
             List(Leaf(Some("-"), Some("j")),
                  Node(Some("eyes"),
-                      None,
+                      Some("g"),
                       List(Leaf(Some("+"), Some("m")),
                            Leaf(Some("-"), Some("r")))),
                  Leaf(Some("+"), Some("r")))

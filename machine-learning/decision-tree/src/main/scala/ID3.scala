@@ -66,7 +66,7 @@ object ID3 extends App {
       names: Vector[Param],
       subset: Vector[TrainingInstance],
       node: Tree,
-      param: Option[Param] = None
+      paramDivided : Option[String] = None
   ): Tree = {
 
     def hasOnlyOneClass(subset: Vector[TrainingInstance]): Boolean =
@@ -93,28 +93,27 @@ object ID3 extends App {
     }
 
     if (hasOnlyOneClass(subset)) {
-      Leaf(Some(subset.head.last), Some(subset.head(names.find(_.name == param.get.name).get.id))) //Return Class
+      Leaf(Some(subset.head.last), paramDivided) //Return Class
     } else {
 
       val dividedSubsets: Map[String, Vector[TrainingInstance]] =
         splitByParam(subset, bestParameterToDivide()._1)
 
       val newNodes: Map[Vector[TrainingInstance], Node] = dividedSubsets.map {
-        case (pName, newSet) =>
-          newSet -> Node(Some(pName), None)()
+        case (pValue, newSet) =>
+          newSet -> Node(Some(pValue), None)()
       }
 
       println(s"Divided into: ${newNodes.prettyPrint}")
 
       Node(
         Some(bestParameterToDivide()._1.name),
-        None
+        paramDivided
       )(
         newNodes.map {
-          case (newSet, node: Tree) => {
+          case (newSet, node: Tree) =>
             node.traverse(node)(println)
-            divide_and_conquer(names, newSet, node, Some(bestParameterToDivide()._1))
-          }
+            divide_and_conquer(names, newSet, node, node.value)
         }.toSeq: _*
       )
     }
@@ -142,7 +141,7 @@ object ID3 extends App {
   }
 
   def recognition(rulesTree: Tree) = {
-    classify(paramNames, testValues.head, rulesTree)
+    testValues.map(classify(paramNames, _, rulesTree))
   }
 
   def classify(names: Vector[Param], trainingInstance: TrainingInstance, node: Tree): String = {
