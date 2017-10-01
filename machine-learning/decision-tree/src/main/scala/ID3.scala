@@ -195,6 +195,7 @@ object ID3 extends App {
   resultTree.traverse(resultTree)(println)
   println("----- Start recognition -----")
   val testSet = recognition(resultTree)
+  println("----- End recognition -----")
   println(testSet)
 
 }
