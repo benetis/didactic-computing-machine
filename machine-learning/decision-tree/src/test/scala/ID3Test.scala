@@ -53,6 +53,40 @@ class ID3Test extends FreeSpec {
       )
     }
 
+    "should correctly create tree" in {
+      assert(
+        ID3.divide_and_conquer(
+          Vector(
+            Param(0, "Hair"),
+            Param(1, "Size"),
+            Param(2, "Class")
+          ),
+          Vector(
+            Vector("short", "small", "chihuahua"),
+            Vector("long", "big", "shepherd"),
+            Vector("fluff", "small", "corgi"),
+            Vector("long", "small", "corgi"),
+            Vector("short", "big", "greyhound")
+          ),
+          Node(None, None)()
+        ) === Node(
+          Some("Hair"),
+          None,
+          List(
+            Node(Some("Size"),
+                 Some("short"),
+                 List(Leaf(Some("chihuahua"), Some("small")),
+                      Leaf(Some("greyhound"), Some("big")))),
+            Leaf(Some("corgi"), Some("fluff")),
+            Node(Some("Size"),
+                 Some("long"),
+                 List(Leaf(Some("corgi"), Some("small")),
+                      Leaf(Some("shepherd"), Some("big"))))
+          )
+        )
+      )
+    }
+
   }
 
   "Information gain" - {
@@ -77,21 +111,6 @@ class ID3Test extends FreeSpec {
           )
         ) === 0.0d)
     }
-
-//    "should count entropy to be 0.5 as in example for hair" in {
-//      assert(
-//        ID3.entropy(
-//          Vector(
-//            Vector("g", "+"),
-//            Vector("g", "-"),
-//            Vector("r", "+"),
-//            Vector("j", "-"),
-//            Vector("j", "-"),
-//            Vector("g", "+"),
-//            Vector("j", "-"),
-//            Vector("g", "-")
-//          )) === 0.5)
-//    }
 
     "should count entropy to be 0.95 as in example for size" in {
       assert(
@@ -166,5 +185,6 @@ class ID3Test extends FreeSpec {
         ) === "-"
       )
     }
+
   }
 }
