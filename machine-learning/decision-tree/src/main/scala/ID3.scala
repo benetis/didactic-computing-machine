@@ -19,8 +19,9 @@ object ID3 extends App {
     val feature: Option[String]
   }
 
-  case class Node(value: Option[String], feature: Option[String], children: Seq[Tree])(
-      implicit dummy: Manifest[Node])
+  case class Node(value: Option[String],
+                  feature: Option[String],
+                  children: Seq[Tree])(implicit dummy: Manifest[Node])
       extends Tree
 
   object Node {
@@ -28,29 +29,29 @@ object ID3 extends App {
       new Node(value, feature, children)
   }
 
-  case class Leaf(value: Option[String], feature: Option[String]) extends Tree
+  case class Leaf(value: Option[String], feature: Option[String], instance: String = "") extends Tree
 
   case class Param(id: Int, name: String)
 
-  val names = Vector("x1", "x2", "x3", "x4", "Class")
+  val names = Vector("instanceName", "x1", "x2", "x3", "x4", "Class")
 
   val inputValues = Vector(
-    //x1   x2   x3   x4   Cl
-    Vector("c", "b", "b", "c", "Y"),
-    Vector("d", "c", "b", "c", "G"),
-    Vector("c", "c", "d", "d", "R"),
-    Vector("b", "d", "c", "b", "R"),
-    Vector("d", "c", "d", "c", "G"),
-    Vector("d", "c", "c", "b", "G"),
-    Vector("d", "b", "c", "c", "Y"),
-    Vector("c", "d", "d", "d", "Y"),
-    Vector("b", "b", "b", "b", "R"),
-    Vector("b", "c", "c", "b", "G")
+    //name x1   x2   x3   x4   Cl
+    Vector("e1", "c", "b", "b", "c", "Y"),
+    Vector("e2", "d", "c", "b", "c", "G"),
+    Vector("e3", "c", "c", "d", "d", "R"),
+    Vector("e4", "b", "d", "c", "b", "R"),
+    Vector("e5", "d", "c", "d", "c", "G"),
+    Vector("e6", "d", "c", "c", "b", "G"),
+    Vector("e7", "d", "b", "c", "c", "Y"),
+    Vector("e8", "c", "d", "d", "d", "Y"),
+    Vector("e9", "b", "b", "b", "b", "R"),
+    Vector("e10", "b", "c", "c", "b", "G")
   )
 
   val testValues = Vector(
-    Vector("b", "b", "c", "d", "Y"),
-    Vector("b", "d", "b", "b", "R")
+    Vector("e11", "b", "b", "c", "d"),
+    Vector("e12", "b", "d", "b", "b")
   )
 
   val paramNames = names.zipWithIndex.map { case (n, i) => Param(i, n) }
@@ -58,42 +59,55 @@ object ID3 extends App {
   def learning() = {
     val rootNode = Node(None, None)()
 
-
     divide_and_conquer(paramNames, inputValues, rootNode)
   }
+
+  def log2(x: Double) = scala.math.log10(x) / scala.math.log10(2.0)
 
   def divide_and_conquer(
       names: Vector[Param],
       subset: Vector[TrainingInstance],
       node: Tree,
-      paramDivided : Option[String] = None
+      paramDivided: Option[String] = None
   ): Tree = {
-
     def hasOnlyOneClass(subset: Vector[TrainingInstance]): Boolean =
       subset.map(_.last).toSet.size == 1
 
     def bestParameterToDivide(): (Param, Double) = {
-      val entropyForEachParam: Vector[(Param, Double)] = {
-        names.dropRight(1).map { p => //dropRight to exclude class
-          p -> splitByParam(subset, p).map {
-            case (param, set: Vector[TrainingInstance]) =>
+      val IGRatioForEachParam: Vector[(Param, Double)] = {
+        names.drop(1).dropRight(1).map { p => //dropRight to exclude class and name
+
+          val IG = entropy(subset) - splitByParam(subset, p).map {
+            case (paramValue, set: Vector[TrainingInstance]) =>
               val probabilityThisSetIsTaken
                 : Double = set.size.toDouble / subset.size
               entropy(set) * probabilityThisSetIsTaken
           }.sum
+
+          val intrinsic = splitByParam(subset, p).foldLeft(0.0d) {
+            case (result: Double, (_, iSet: Vector[TrainingInstance])) =>
+              result - (iSet.size.toDouble / subset.size) * log2(
+                iSet.size.toDouble / subset.size)
+          }
+
+          if (intrinsic == 0)
+            p -> 0.0d
+          else
+            p -> IG / intrinsic
         }
+
       }
 
-      val lowestEntropy: (Param, Double) = entropyForEachParam.minBy(_._2)
+      val bestRatio: (Param, Double) = IGRatioForEachParam.maxBy(_._2)
 
-      println(s"Picking $lowestEntropy")
+      println(s"Picking $bestRatio")
 
-      lowestEntropy
+      bestRatio
 
     }
 
     if (hasOnlyOneClass(subset)) {
-      Leaf(Some(subset.head.last), paramDivided) //Return Class
+      Leaf(Some(subset.head.last), paramDivided, subset.head.head) //Return Class
     } else {
 
       val dividedSubsets: Map[String, Vector[TrainingInstance]] =
@@ -126,9 +140,8 @@ object ID3 extends App {
 
   def entropy(subset: Vector[TrainingInstance]): Double = {
 
-    val log2 = (x: Double) => scala.math.log10(x) / scala.math.log10(2.0)
-
-    val classesCount = subset.map(_.last).groupBy(identity)
+    val classesCount: Map[String, Vector[String]] =
+      subset.map(_.last).groupBy(identity)
 
     val thisSetSize: Double = classesCount.map(_._2.size).sum
 
@@ -144,16 +157,19 @@ object ID3 extends App {
     testValues.map(classify(paramNames, _, rulesTree))
   }
 
-  def classify(names: Vector[Param], trainingInstance: TrainingInstance, node: Tree): String = {
+  def classify(names: Vector[Param],
+               trainingInstance: TrainingInstance,
+               node: Tree): String = {
     node match {
-      case Leaf(value, _) => value.get
+      case Leaf(value, _, _) => value.get
       case Node(paramThatSplits: Option[String], _, children: Seq[Tree]) =>
-
-        val paramConverted: Param = names.find(_.name == paramThatSplits.get).get
+        val paramConverted: Param =
+          names.find(_.name == paramThatSplits.get).get
 
         val paramValue = trainingInstance(paramConverted.id)
 
-        val neededChildNode: Option[Tree] = children.find(_.feature.get == paramValue)
+        val neededChildNode: Option[Tree] =
+          children.find(_.feature.get == paramValue)
 
         classify(names, trainingInstance, neededChildNode.get)
     }
