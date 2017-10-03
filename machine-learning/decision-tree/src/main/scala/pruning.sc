@@ -18,7 +18,7 @@ val bChildren = bb + bc
 
 val pruneBChildren = b < bChildren
 
-val c = pessimisticErr(5, 3)
+val c = pessimisticErr(5, 4)
 
 val cd = pessimisticErr(3, 3)
 val cc = pessimisticErr(1, 1)

@@ -18,7 +18,7 @@ bChildren: Double = 1.64428827971892
 
 pruneBChildren: Boolean = false
 
-c: Double = 3.218359579580018
+c: Double = 2.410366337312914
 
 cd: Double = 1.2171547489950574
 cc: Double = 0.646323682866696
@@ -26,7 +26,7 @@ cb: Double = 0.646323682866696
 
 cChildren: Double = 2.509802114728449
 
-pruneCChildren: Boolean = false
+pruneCChildren: Boolean = true
 
 d: Double = 1.5749999880790702
 
