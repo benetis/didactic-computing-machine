@@ -29,7 +29,10 @@ object ID3 extends App {
       new Node(value, feature, children)
   }
 
-  case class Leaf(value: Option[String], feature: Option[String], instance: String = "") extends Tree
+  case class Leaf(value: Option[String],
+                  feature: Option[String],
+                  instance: String = "")
+      extends Tree
 
   case class Param(id: Int, name: String)
 
