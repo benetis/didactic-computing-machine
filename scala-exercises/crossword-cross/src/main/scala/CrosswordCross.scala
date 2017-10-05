@@ -1,4 +1,4 @@
-object CrosswordCross extends App{
+object CrosswordCross extends App {
   val wordsList = Vector(
     "pakili",
     "kilimas",
@@ -13,4 +13,5 @@ object CrosswordCross extends App{
   def freqList(words: Vector[String]): Map[Int, Vector[String]] = {
     words.groupBy(_.length)
   }
+
 }
