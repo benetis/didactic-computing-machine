@@ -5,42 +5,40 @@ object Regression extends App {
 
   type Weight = Double
 
-  val epsilon = 0.01
-
-  val descentIterations = 1000
-
-//  val trainingSet = Vector(
-//    Example("e1", -14.5, -2, 4, -3, -4),
-//    Example("e2", 5, 2, -4, 0, 2),
-//    Example("e3", -17.5, -5, 3, -3, 0),
-//    Example("e4", -3.5, -1, 1, 1, -2),
-//    Example("e5", 0.5, 3, -2, -2, -1),
-//    Example("e6", 11, -1, -5, 0, 5),
-//    Example("e7", 10.5, -1, -5, -5, -3),
-//    Example("e8", -0.5, -2, -1, -3, -3)
-//  )
+  val descentIterations = 10000
 
   val trainingSet = Vector(
-    Example("e1", 0, 0, 1),
-    Example("e2", 2, 2, 0),
-    Example("e3", 4, 2, 2),
-    Example("e4", 1, 2, 3),
-    Example("e5", 3, 5, 2)
+    Example("e1", -14.5, -2, 4, -3, -4),
+    Example("e2", 5, 2, -4, 0, 2),
+    Example("e3", -17.5, -5, 3, -3, 0),
+    Example("e4", -3.5, -1, 1, 1, -2),
+    Example("e5", 0.5, 3, -2, -2, -1),
+    Example("e6", 11, -1, -5, 0, 5),
+    Example("e7", 10.5, -1, -5, -5, -3),
+    Example("e8", -0.5, -2, -1, -3, -3)
   )
-//
-//  val testSet = Vector(
-//    Example("e9", -9, -3, 3, 4, 4),
-//    Example("e10", -2.5, 0, 0, -5, -4)
+
+//  val trainingSet = Vector(
+//    Example("e1", 0, 0, 1),
+//    Example("e2", 2, 2, 0),
+//    Example("e3", 4, 2, 2),
+//    Example("e4", 1, 2, 3),
+//    Example("e5", 3, 5, 2)
 //  )
 
   val testSet = Vector(
-    Example("e6", 1.37, 1, 2),
-    Example("e7", 1.93, 2, 1)
+    Example("e9", -9, -3, 3, 4, 4),
+    Example("e10", -2.5, 0, 0, -5, -4)
   )
+
+//  val testSet = Vector(
+//    Example("e6", 1.37, 1, 2),
+//    Example("e7", 1.93, 2, 1)
+//  )
 
   learning(
     trainingSet,
-    0.1
+    0.00001
   )
 
   /**
@@ -68,84 +66,46 @@ object Regression extends App {
       }
     }
 
-    def gradientDescentForWeight(
-        epsilon: Double,
-        alfaStep: Double,
-        thetas: Vector[Weight],
-        features: Vector[Double],
-        startingValue: Double,
-        previousValue: Double,
-        iterations: Int,
-        fun: (Double) => Double
-    ): Double = {
-      if (math.abs(startingValue - previousValue) > epsilon && iterations > 0) {
-        gradientDescentForWeight(
-          epsilon,
-          alfaStep,
-          thetas,
-          features,
-          startingValue - alfaStep * fun(startingValue),
-          startingValue,
-          iterations - 1,
-          fun
-        )
-      } else //Converges
-        startingValue
-    }
-
     val inputThetas: Vector[Weight] = Vector
       .fill(featureAmount)(1.0)
 
-    val result = trainingSet.map((curr: Example) => {
+    def stochasticDescent(thetas: Vector[Weight],
+                          examples: Vector[Example],
+                          iter: Int) : Vector[Weight] = {
+      if (iter > 0) {
+        val randomShuffledSet = scala.util.Random.shuffle(examples)
 
-      def calculateThetas(
-          currThetas: Vector[Weight],
-          remainingThetas: Vector[(Weight, Int)]): Vector[Weight] = {
+        val newThetas = randomShuffledSet.foldLeft(thetas)(
+          (result, curr: Example) => {
+            result.zipWithIndex.map {
+              case (t: Weight, i) =>
+                t - alfaStep * hypothesis(thetas,
+                                          curr.features.toVector,
+                                          linear) * curr.features(i)
+            }
+          })
 
-        if (remainingThetas.nonEmpty) { //Calculate next one
+        stochasticDescent(newThetas, examples, iter - 1)
 
-          val currTheta: (Weight, Int) = remainingThetas.head
-
-          val nextTheta = gradientDescentForWeight(
-            epsilon,
-            alfaStep,
-            currThetas,
-            curr.features.toVector,
-            currTheta._1,
-            -1.0,
-            descentIterations,
-            (h: Double) => (curr.target - h) * curr.features(currTheta._2)
-          )
-
-          calculateThetas(Vector(nextTheta) ++ currThetas.tail,
-                          remainingThetas.tail)
-
-        } else {
-          currThetas
-        }
-
+      } else {
+        thetas
       }
+    }
 
-      val th: Vector[Weight]         = inputThetas
-      val thi: Vector[(Weight, Int)] = inputThetas.zipWithIndex
-
-      calculateThetas(th, thi)
-
-    })
+    val resultWeights = stochasticDescent(inputThetas, trainingSet, descentIterations)
 
     val predict =
-      testSet.map(ex => hypothesis(result.last, ex.features.toVector, linear))
+      testSet.map(ex => hypothesis(resultWeights, ex.features.toVector, linear))
 
-//    val predictNonLinear =
-//      testSet.map(ex =>
-//        hypothesis(result.last, ex.features.toVector, linearAdditional))
+    val predictNonLinear =
+      testSet.map(ex =>
+        hypothesis(resultWeights, ex.features.toVector, linearAdditional))
 
-    println(s"weights ${result.last}")
+    println(s"weights $resultWeights")
     println(s"prediction $predict")
-//    println(s"prediction non-linear $predictNonLinear")
+    println(s"prediction non linear $predictNonLinear")
 
-    result.last
-
+    Vector(0.0)
   }
 
 }
