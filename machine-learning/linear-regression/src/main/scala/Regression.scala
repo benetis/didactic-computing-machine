@@ -75,10 +75,11 @@ object Regression extends App {
 
       //visiems svoriams paskaiciuoti naujus svorius pagal sita example
 
-      def calculateThetas(currThetas: Vector[Weight],
-                          remainingThetas: Vector[(Weight, Int)]): Vector[Weight] = {
+      def calculateThetas(
+          currThetas: Vector[Weight],
+          remainingThetas: Vector[(Weight, Int)]): Vector[Weight] = {
 
-        if(remainingThetas.nonEmpty) { //Calculate next one
+        if (remainingThetas.nonEmpty) { //Calculate next one
 
           val currTheta: (Weight, Int) = remainingThetas.head
 
@@ -92,7 +93,7 @@ object Regression extends App {
             (h: Double) => (curr.target - h) * curr.features(currTheta._2)
           )
 
-          calculateThetas(currThetas ++ Vector(nextTheta), remainingThetas.tail)
+          calculateThetas(Vector(nextTheta) ++ currThetas.tail, remainingThetas.tail)
 
         } else {
           currThetas
@@ -100,24 +101,17 @@ object Regression extends App {
 
       }
 
-      val th: Vector[Weight] = inputThetas
+      val th: Vector[Weight]         = inputThetas
       val thi: Vector[(Weight, Int)] = inputThetas.zipWithIndex
 
       calculateThetas(th, thi)
 
     })
 
-//      .zipWithIndex
-//      .map {
-//        case (i, _) =>
-//          trainingSet.foldLeft(0.0)((res, trainingExample) => {
-//            res + alfaStep * (trainingExample.target - hypothesis(
-//              Vector.fill(featureAmount)(0),
-//              trainingExample.features.toVector)) * trainingExample.features(i)
-//          })
-//      }
+    val predict = testSet.map(ex => hypothesis(result.last, ex.features.toVector))
 
-    println(result.last)
+    println(s"weights ${result.last}")
+    println(s"prediction $predict")
 
     result.last
 
