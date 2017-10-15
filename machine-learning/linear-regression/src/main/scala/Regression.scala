@@ -38,7 +38,7 @@ object Regression extends App {
 
   learning(
     trainingSet,
-    0.00001
+    0.001
   )
 
   /**
@@ -49,39 +49,39 @@ object Regression extends App {
                alfaStep: Double): Vector[Weight] = {
     val featureAmount = trainingSet.head.features.size
 
-    def linear(weightFeature: (Weight, Double)): Double =
-      weightFeature._1 * weightFeature._2
-
-    def linearAdditional(weightFeature: (Weight, Double)): Double =
-      linear(weightFeature) * weightFeature._2
-
-    def hypothesis(thetas: Vector[Weight],
-                   features: Vector[Double],
-                   func: ((Weight, Double)) => Double): Double = {
+    def hypothesis(thetas: Vector[Weight], features: Vector[Double]): Double = {
       /* theta0 + theta1*x1 ... */
-      features.updated(0, 1.0).zip(thetas).foldLeft(0.0) { (res, thetaTuple) =>
+      (Vector(1.0) ++ features).zip(thetas).foldLeft(0.0) { (res, thetaTuple) =>
         {
-          res + func(thetaTuple._1, thetaTuple._2)
+          res + thetaTuple._1 * thetaTuple._2
         }
       }
     }
 
     val inputThetas: Vector[Weight] = Vector
-      .fill(featureAmount)(1.0)
+      .fill(featureAmount + 1)(1.0) //because θ_0 +θ_1x1 +θ_2x2
+
+    def getXjFromFeatures(features: Vector[Double], j: Int): Double = {
+      if (features.size == j) {
+        1
+      } else {
+        features(j)
+      }
+    }
 
     def stochasticDescent(thetas: Vector[Weight],
                           examples: Vector[Example],
-                          iter: Int) : Vector[Weight] = {
+                          iter: Int): Vector[Weight] = {
       if (iter > 0) {
         val randomShuffledSet = scala.util.Random.shuffle(examples)
 
-        val newThetas = randomShuffledSet.foldLeft(thetas)(
-          (result, curr: Example) => {
+        val newThetas =
+          randomShuffledSet.foldLeft(thetas)((result, curr: Example) => {
             result.zipWithIndex.map {
-              case (t: Weight, i) =>
-                t - alfaStep * hypothesis(thetas,
-                                          curr.features.toVector,
-                                          linear) * curr.features(i)
+              case (t: Weight, j) =>
+                t - alfaStep * hypothesis(thetas, curr.features.toVector) * getXjFromFeatures(
+                  curr.features.toVector,
+                  j)
             }
           })
 
@@ -92,18 +92,19 @@ object Regression extends App {
       }
     }
 
-    val resultWeights = stochasticDescent(inputThetas, trainingSet, descentIterations)
+    val resultWeights =
+      stochasticDescent(inputThetas, trainingSet, descentIterations)
 
     val predict =
-      testSet.map(ex => hypothesis(resultWeights, ex.features.toVector, linear))
-
-    val predictNonLinear =
-      testSet.map(ex =>
-        hypothesis(resultWeights, ex.features.toVector, linearAdditional))
+      testSet.map(ex => hypothesis(resultWeights, ex.features.toVector))
+//
+//    val predictNonLinear =
+//      testSet.map(ex =>
+//        hypothesis(resultWeights, ex.features.toVector, linearAdditional))
 
     println(s"weights $resultWeights")
     println(s"prediction $predict")
-    println(s"prediction non linear $predictNonLinear")
+//    println(s"prediction non linear $predictNonLinear")
 
     Vector(0.0)
   }
