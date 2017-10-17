@@ -20,4 +20,6 @@ cabal.project.local
 .idea
 
 */**/node_modules/
+**/target/**
+**/.DS_Store
 output/
