@@ -1,11 +1,12 @@
-import scala.collection.immutable
+import scalax.chart.api._
+
 object Regression extends App {
 
   case class Example(name: String, target: Double, features: Double*)
 
   type Weight = Double
 
-  val descentIterations = 10000
+  val descentIterations = 100
 
   val trainingSet = Vector(
     Example("e1", -14.5, -2, 4, -3, -4),
@@ -18,6 +19,12 @@ object Regression extends App {
     Example("e8", -0.5, -2, -1, -3, -3)
   )
 
+  val testSet = Vector(
+    Example("e9", -9, -3, 3, 4, 4),
+    Example("e10", -2.5, 0, 0, -5, -4)
+  )
+
+
 //  val trainingSet = Vector(
 //    Example("e1", 0, 0, 1),
 //    Example("e2", 2, 2, 0),
@@ -25,12 +32,7 @@ object Regression extends App {
 //    Example("e4", 1, 2, 3),
 //    Example("e5", 3, 5, 2)
 //  )
-
-  val testSet = Vector(
-    Example("e9", -9, -3, 3, 4, 4),
-    Example("e10", -2.5, 0, 0, -5, -4)
-  )
-
+//
 //  val testSet = Vector(
 //    Example("e6", 1.37, 1, 2),
 //    Example("e7", 1.93, 2, 1)
@@ -48,6 +50,8 @@ object Regression extends App {
   def learning(trainingSet: Vector[Example],
                alfaStep: Double): Vector[Weight] = {
     val featureAmount = trainingSet.head.features.size
+    val inputThetas: Vector[Weight] = Vector
+      .fill(featureAmount + 1)(1.0) //because θ_0 +θ_1x1 +θ_2x2
 
     def hypothesis(thetas: Vector[Weight], features: Vector[Double]): Double = {
       /* theta0 + theta1*x1 ... */
@@ -57,9 +61,6 @@ object Regression extends App {
         }
       }
     }
-
-    val inputThetas: Vector[Weight] = Vector
-      .fill(featureAmount + 1)(1.0) //because θ_0 +θ_1x1 +θ_2x2
 
     def getXjFromFeatures(features: Vector[Double], j: Int): Double = {
       if (features.size == j) {
@@ -79,9 +80,10 @@ object Regression extends App {
           randomShuffledSet.foldLeft(thetas)((result, curr: Example) => {
             result.zipWithIndex.map {
               case (t: Weight, j) =>
-                t - alfaStep * hypothesis(thetas, curr.features.toVector) * getXjFromFeatures(
-                  curr.features.toVector,
-                  j)
+                t + alfaStep * (curr.target - hypothesis(
+                  thetas,
+                  curr.features.toVector)) *
+                  getXjFromFeatures(curr.features.toVector, j)
             }
           })
 
@@ -97,14 +99,22 @@ object Regression extends App {
 
     val predict =
       testSet.map(ex => hypothesis(resultWeights, ex.features.toVector))
-//
-//    val predictNonLinear =
-//      testSet.map(ex =>
-//        hypothesis(resultWeights, ex.features.toVector, linearAdditional))
+
+
 
     println(s"weights $resultWeights")
     println(s"prediction $predict")
-//    println(s"prediction non linear $predictNonLinear")
+
+    val data = for (i <- 1 to 5) yield (i,i)
+    val chart = XYLineChart(data)
+    chart.show()
+//    for (x <- -4.0 to 4 by 0.1) {
+//   DDT4@zin
+//   swing.Swing onEDT {
+//        series.add(x,math.sin(x))
+//      }
+//      Thread.sleep(50)
+//    }
 
     Vector(0.0)
   }
