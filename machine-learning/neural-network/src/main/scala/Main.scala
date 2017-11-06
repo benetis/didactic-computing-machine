@@ -34,11 +34,13 @@ object NN {
     x * (1.0 - x)
   }
 
-  def propogateForward(NN: Vector[Layer],
-                       trainingSet: Vector[Double]): (Vector[Layer], Vector[Double]) = {
+  def propogateForward(
+      NN: Vector[Layer],
+      trainingInstance: Vector[Double]): (Vector[Layer], Vector[Double]) = {
     val updatedNN = NN.map((layer: Layer) => {
       layer.map((neuron: Neuron) => {
-        val neuronLR     = linearRegressionForNeuron(neuron.weights, trainingSet)
+        val neuronLR =
+          linearRegressionForNeuron(neuron.weights, trainingInstance)
         val neuronOutput = sigmoid(neuronLR)
         neuron.copy(output = neuronOutput)
       })
@@ -74,6 +76,29 @@ object NN {
             neuron.copy(
               errorDelta = errors(j) * sigmoidDerirative(neuron.output))
         }
+    }
+  }
+
+  def updateNetworkWeights(NN: Vector[Layer],
+                           trainingInstance: Vector[Double],
+                           learningSpeed: Double): Vector[Layer] = {
+    NN.zipWithIndex.map { case (layer, index) =>
+
+      val inputs = if(index != 0) {
+        NN(index - 1).map(_.output)
+      } else {
+        trainingInstance.init
+      }
+
+      layer.zipWithIndex.map { case (neuron: Neuron, j) =>
+        val updatedNeuronWeights = inputs.zipWithIndex.map { case(input: Double, k: Int) =>
+          neuron.weights(k) + learningSpeed * neuron.errorDelta * input
+        }
+
+        val deltaWeight = learningSpeed * neuron.errorDelta
+
+        neuron.copy(weights = updatedNeuronWeights :+ deltaWeight)
+      }
     }
   }
 
