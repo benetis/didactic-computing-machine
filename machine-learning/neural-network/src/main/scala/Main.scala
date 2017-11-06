@@ -6,11 +6,12 @@ object Main extends App {
   val nInput = 3
   val hiddenLayers = 1
   val myNN = NN.initializeNN(nInput, nOutput, 1)
-  NN.trainNetwork(myNN,
+  val finishedNN = NN.trainNetwork(myNN,
     Vector(
       Vector(-3, -1, -3, 1),
-      Vector(2, 0, 0, 0)
-//      Vector(1, -1, 3, 1),
+      Vector(-2, -1, -3, 1),
+      Vector(2, 0, 0, 0),
+      Vector(1, -1, 3, 1)
 //      Vector(-2, -3, -1, 1),
 //      Vector(2, -3, 0, 3),
 //      Vector(1, 1, -4, 1),
@@ -19,6 +20,8 @@ object Main extends App {
     ),
     10,
     nOutput)
+
+  println(finishedNN)
 //
 //  val (updatedNN, _) = NN.propogateForward(myNN, Vector(1, 0))
 //  println(NN.propogateBackward(updatedNN, Vector(1, 0)))
@@ -151,10 +154,9 @@ object NN {
 
       val nextInputNN = trainingSet.zipWithIndex.foldLeft(Vector.empty[Layer])((_, curr) => {
         val (forward, outputs) = propogateForward(NN, curr._1)
-        val trainingSetIndex = curr._2
 
         val expectedEmpty: Vector[Int] = Vector.fill(nOutput)(0)
-        val expected = expectedEmpty.updated(trainingSetIndex, 1)
+        val expected = expectedEmpty.updated(curr._1.last.toInt, 1)
 
         sumError += expected.zipWithIndex.foldLeft(0.0)((prev, curr) => {
           prev + Math.pow(curr._1 - outputs(curr._2), 2)
@@ -163,7 +165,7 @@ object NN {
         val backward = propogateBackward(forward, expected)
         updateNetworkWeights(backward, curr._1, 0.1) //learning rate
       })
-      println(s"iteration: $iter, error: $sumError")
+      println(s"iteration: $iter, error: $sumError ${nextInputNN.last.map(_.errorDelta)}")
 
       trainNetwork(nextInputNN, trainingSet, iter - 1, nOutput)
     }
