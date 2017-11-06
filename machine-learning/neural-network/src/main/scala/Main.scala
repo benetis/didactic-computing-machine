@@ -2,13 +2,23 @@
 
 object Main extends App {
   //
-  val myNN = NN.initializeNN(2, 2, 1)
+  val nOutput = 2
+  val nInput = 3
+  val hiddenLayers = 1
+  val myNN = NN.initializeNN(nInput, nOutput, 1)
   NN.trainNetwork(myNN,
     Vector(
-      Vector(1.0, 2.0, 1)
+      Vector(-3, -1, -3, 1),
+      Vector(2, 0, 0, 0)
+//      Vector(1, -1, 3, 1),
+//      Vector(-2, -3, -1, 1),
+//      Vector(2, -3, 0, 3),
+//      Vector(1, 1, -4, 1),
+//      Vector(3, -2, 0, 4),
+//      Vector(-1, -1, 1, 3)
     ),
     10,
-    2)
+    nOutput)
 //
 //  val (updatedNN, _) = NN.propogateForward(myNN, Vector(1, 0))
 //  println(NN.propogateBackward(updatedNN, Vector(1, 0)))
@@ -151,7 +161,7 @@ object NN {
         })
 
         val backward = propogateBackward(forward, expected)
-        updateNetworkWeights(backward, curr._1, 0.1)
+        updateNetworkWeights(backward, curr._1, 0.1) //learning rate
       })
       println(s"iteration: $iter, error: $sumError")
 
