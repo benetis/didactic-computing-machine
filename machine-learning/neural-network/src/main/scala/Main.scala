@@ -49,7 +49,7 @@ object NN {
 
   val r = new scala.util.Random(1)
 
-  private def linearRegressionForNeuron(weights: Vector[Double],
+  private def neuronYForInputs(weights: Vector[Double],
                                         inputs: Vector[Double]): Double = {
     weights
       .dropRight(1)
@@ -74,7 +74,7 @@ object NN {
     val updatedNN = NN.map((layer: Layer) => {
       layer.map((neuron: Neuron) => {
         val neuronLR =
-          linearRegressionForNeuron(neuron.weights, trainingInstance)
+          neuronYForInputs(neuron.weights, trainingInstance)
         val neuronOutput = sigmoid(neuronLR)
         neuron.copy(output = neuronOutput)
       })
