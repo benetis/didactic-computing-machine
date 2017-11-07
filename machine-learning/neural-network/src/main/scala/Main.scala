@@ -3,19 +3,21 @@
 object Main extends App {
   //
   val nOutput      = 2 //0,1,2,3...
-  val nInput       = 3
+  val nInput       = 1
   val hiddenLayers = 1
   val learningRate = 0.05
-  val iterations   = 1500
-  val myNN         = NN.initializeNN(nInput, nOutput, 1)
+  val iterations   = 500
+  val myNN         = NN.initializeNN(nInput, nOutput, hiddenLayers)
   val finishedNN = NN.trainNetwork(
     myNN,
     Vector(
-      Vector(1, 0, 1, 0),
-      Vector(0.9, 0, 1, 0),
-      Vector(0, 0.0, 0.0, 1),
-      Vector(0, 0.2, 0.0, 1),
-      Vector(0.1, 0.1, 0.0, 1)
+      Vector(0.1, 0),
+      Vector(0.1, 0),
+      Vector(0.1, 0),
+      Vector(0.7, 1),
+      Vector(0.7, 1),
+      Vector(0.7, 1)
+
     ),
     iterations,
     nOutput,
@@ -23,7 +25,8 @@ object Main extends App {
   )
 
   val testSet: Vector[Vector[Double]] = Vector(
-    Vector(0.1, 0, 0.1, 1)
+    Vector(0.2, 0),
+    Vector(0.9, 1)
   )
 
   println("Trained network: ")
@@ -50,7 +53,7 @@ object NN {
   val r = new scala.util.Random(1)
 
   private def neuronYForInputs(weights: Vector[Double],
-                                        inputs: Vector[Double]): Double = {
+                               inputs: Vector[Double]): Double = {
     weights
       .dropRight(1)
       .zipWithIndex
@@ -96,7 +99,7 @@ object NN {
             layer.zipWithIndex.map {
               case (_, j) =>
                 NN(i + 1).foldLeft(0.0)((prev, neuron: Neuron) => {
-                  prev + neuron.weights(j) * neuron.errorDelta
+                  prev + (neuron.weights(j) * neuron.errorDelta)
                 })
             }
           } else {
@@ -135,7 +138,9 @@ object NN {
 
             val deltaWeight = learningSpeed * neuron.errorDelta
 
-            neuron.copy(weights = updatedNeuronWeights :+ deltaWeight)
+            val weights = updatedNeuronWeights :+ (neuron.weights.last + deltaWeight)
+
+            neuron.copy(weights = weights)
         }
     }
   }
@@ -147,7 +152,7 @@ object NN {
       val biasInput = 1
       Vector.fill(neuronsInLayer) {
         val neuronWeights = Vector.fill(prevLayerNeuronN + biasInput) {
-          r.nextDouble()
+          r.nextDouble() - 0.5
         }
         Neuron(neuronWeights, 0.0, 0.0)
       }
