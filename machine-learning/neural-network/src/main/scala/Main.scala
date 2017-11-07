@@ -5,6 +5,8 @@ object Main extends App {
   val nOutput      = 2
   val nInput       = 3
   val hiddenLayers = 1
+  val learningRate = 1
+  val iterations = 20
   val myNN         = NN.initializeNN(nInput, nOutput, 1)
   val finishedNN = NN.trainNetwork(
     myNN,
@@ -19,8 +21,9 @@ object Main extends App {
 //      Vector(3, -2, 0, 4),
 //      Vector(-1, -1, 1, 3)
     ),
-    20,
-    nOutput
+    iterations,
+    nOutput,
+    learningRate
   )
 
   println(finishedNN)
@@ -73,31 +76,32 @@ object NN {
   def propogateBackward(NN: Vector[Layer],
                         expectedOutput: Vector[Int]): Vector[Layer] = {
 
-    NN.zipWithIndex.map { case(_, ind) =>
-      val i = NN.size - ind - 1
-      val errors = {
-        val layer = NN(i)
+    NN.zipWithIndex.map {
+      case (_, ind) =>
+        val i = NN.size - ind - 1
+        val errors = {
+          val layer = NN(i)
 
-        if (i != NN.size - 1) {
-          layer.zipWithIndex.map {
-            case (_, j) =>
-              NN(i + 1).foldLeft(0.0)((prev, neuron: Neuron) => {
-                prev + neuron.weights(j) * neuron.errorDelta
-              })
-          }
-        } else {
-          layer.zipWithIndex.map {
-            case (_, j: Int) =>
-              expectedOutput(j) - layer(j).output
+          if (i != NN.size - 1) {
+            layer.zipWithIndex.map {
+              case (_, j) =>
+                NN(i + 1).foldLeft(0.0)((prev, neuron: Neuron) => {
+                  prev + neuron.weights(j) * neuron.errorDelta
+                })
+            }
+          } else {
+            layer.zipWithIndex.map {
+              case (_, j: Int) =>
+                expectedOutput(j) - layer(j).output
+            }
           }
         }
-      }
 
-      NN(i).zipWithIndex.map {
-        case (neuron: Neuron, j: Int) =>
-          neuron.copy(
-            errorDelta = errors(j) * sigmoidDerirative(neuron.output))
-      }
+        NN(i).zipWithIndex.map {
+          case (neuron: Neuron, j: Int) =>
+            neuron.copy(
+              errorDelta = errors(j) * sigmoidDerirative(neuron.output))
+        }
     }.reverse
   }
 
@@ -149,7 +153,8 @@ object NN {
   def trainNetwork(NN: Vector[Layer],
                    trainingSet: Vector[Vector[Double]],
                    iter: Int,
-                   nOutput: Int): Vector[Layer] = {
+                   nOutput: Int,
+                   learningRate: Double): Vector[Layer] = {
     if (iter < 0) NN
     else {
 
@@ -166,12 +171,12 @@ object NN {
         })
 
         val backward = propogateBackward(forward, expected)
-        updateNetworkWeights(backward, curr._1, 1) //learning rate
+        updateNetworkWeights(backward, curr._1, learningRate)
       })
       println(
         s"iteration: $iter, error: $sumError ${nextInputNN.last.map(_.errorDelta)}")
 
-      trainNetwork(nextInputNN, trainingSet, iter - 1, nOutput)
+      trainNetwork(nextInputNN, trainingSet, iter - 1, nOutput, learningRate)
     }
   }
 }
