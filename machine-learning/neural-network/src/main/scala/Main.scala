@@ -6,7 +6,7 @@ object Main extends App {
   val nInput       = 3
   val hiddenLayers = 1
   val learningRate = 1
-  val iterations = 200
+  val iterations   = 200
   val myNN         = NN.initializeNN(nInput, nOutput, 1)
   val finishedNN = NN.trainNetwork(
     myNN,
@@ -25,10 +25,14 @@ object Main extends App {
     learningRate
   )
 
-  println(finishedNN)
-//
-//  val (updatedNN, _) = NN.propogateForward(myNN, Vector(1, 0))
-//  println(NN.propogateBackward(updatedNN, Vector(1, 0)))
+  println("Finished network: ")
+  finishedNN.foreach(layer => {
+    layer.foreach(neuron => {
+      println(neuron.weights.foreach(w => print(s"$w ")))
+    })
+
+    println()
+  })
 }
 
 case class Neuron(weights: Vector[Double], output: Double, errorDelta: Double)
@@ -163,7 +167,7 @@ object NN {
         val (forward, outputs) = propogateForward(prev, curr._1)
 
         val expectedEmpty: Vector[Int] = Vector.fill(nOutput)(0)
-        val expected                   = expectedEmpty.updated(curr._1.last.toInt -1, 1)
+        val expected                   = expectedEmpty.updated(curr._1.last.toInt - 1, 1)
 
         sumError += expected.zipWithIndex.foldLeft(0.0)((prev, curr) => {
           prev + Math.pow(curr._1 - outputs(curr._2), 2)
@@ -172,8 +176,7 @@ object NN {
         val backward = propogateBackward(forward, expected)
         updateNetworkWeights(backward, curr._1, learningRate)
       })
-      println(
-        s"iteration: $iter, error: $sumError ${nextInputNN.last.map(_.errorDelta)}")
+      println(s"iteration: $iter, error: $sumError")
 
       trainNetwork(nextInputNN, trainingSet, iter - 1, nOutput, learningRate)
     }
