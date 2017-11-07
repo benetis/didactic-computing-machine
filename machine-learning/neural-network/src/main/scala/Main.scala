@@ -2,36 +2,43 @@
 
 object Main extends App {
   //
-  val nOutput      = 4
+  val nOutput      = 2 //0,1,2,3...
   val nInput       = 3
   val hiddenLayers = 1
-  val learningRate = 1
-  val iterations   = 200
+  val learningRate = 0.05
+  val iterations   = 1500
   val myNN         = NN.initializeNN(nInput, nOutput, 1)
   val finishedNN = NN.trainNetwork(
     myNN,
     Vector(
-      Vector(-3, -1, -3, 1),
-      Vector(2, 0, 0, 2),
-      Vector(1, -1, 3, 1),
-      Vector(-2, -3, -1, 1),
-      Vector(2, -3, 0, 3),
-      Vector(1, 1, -4, 1),
-      Vector(3, -2, 0, 4),
-      Vector(-1, -1, 1, 3)
+      Vector(1, 0, 1, 0),
+      Vector(0.9, 0, 1, 0),
+      Vector(0, 0.0, 0.0, 1),
+      Vector(0, 0.2, 0.0, 1),
+      Vector(0.1, 0.1, 0.0, 1)
     ),
     iterations,
     nOutput,
     learningRate
   )
 
-  println("Finished network: ")
+  val testSet: Vector[Vector[Double]] = Vector(
+    Vector(0.1, 0, 0.1, 1)
+  )
+
+  println("Trained network: ")
   finishedNN.foreach(layer => {
     layer.foreach(neuron => {
       println(neuron.weights.foreach(w => print(s"$w ")))
     })
 
     println()
+  })
+
+  println("Prediction start")
+  testSet.foreach(trainingInstance => {
+    println(
+      s" Expected: ${NN.prediction(finishedNN, trainingInstance)}, actual: ${trainingInstance.last} ")
   })
 }
 
@@ -167,7 +174,7 @@ object NN {
         val (forward, outputs) = propogateForward(prev, curr._1)
 
         val expectedEmpty: Vector[Int] = Vector.fill(nOutput)(0)
-        val expected                   = expectedEmpty.updated(curr._1.last.toInt - 1, 1)
+        val expected                   = expectedEmpty.updated(curr._1.last.toInt, 1)
 
         sumError += expected.zipWithIndex.foldLeft(0.0)((prev, curr) => {
           prev + Math.pow(curr._1 - outputs(curr._2), 2)
@@ -180,5 +187,11 @@ object NN {
 
       trainNetwork(nextInputNN, trainingSet, iter - 1, nOutput, learningRate)
     }
+  }
+
+  def prediction(NN: Vector[Layer], feature: Vector[Double]) = {
+    val (_, output) = propogateForward(NN, feature)
+    println(s"output neurons: $output")
+    output.indexOf(output.max)
   }
 }
