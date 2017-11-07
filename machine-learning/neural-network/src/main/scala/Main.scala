@@ -2,11 +2,12 @@
 
 object Main extends App {
   //
-  val nOutput = 2
-  val nInput = 3
+  val nOutput      = 2
+  val nInput       = 3
   val hiddenLayers = 1
-  val myNN = NN.initializeNN(nInput, nOutput, 1)
-  val finishedNN = NN.trainNetwork(myNN,
+  val myNN         = NN.initializeNN(nInput, nOutput, 1)
+  val finishedNN = NN.trainNetwork(
+    myNN,
     Vector(
       Vector(-3, -1, -3, 1),
       Vector(-2, -1, -3, 1),
@@ -18,8 +19,9 @@ object Main extends App {
 //      Vector(3, -2, 0, 4),
 //      Vector(-1, -1, 1, 3)
     ),
-    10,
-    nOutput)
+    20,
+    nOutput
+  )
 
   println(finishedNN)
 //
@@ -35,7 +37,7 @@ object NN {
   val r = new scala.util.Random(1)
 
   private def linearRegressionForNeuron(weights: Vector[Double],
-    inputs: Vector[Double]): Double = {
+                                        inputs: Vector[Double]): Double = {
     weights
       .dropRight(1)
       .zipWithIndex
@@ -54,8 +56,8 @@ object NN {
   }
 
   def propogateForward(
-    NN: Vector[Layer],
-    trainingInstance: Vector[Double]): (Vector[Layer], Vector[Double]) = {
+      NN: Vector[Layer],
+      trainingInstance: Vector[Double]): (Vector[Layer], Vector[Double]) = {
     val updatedNN = NN.map((layer: Layer) => {
       layer.map((neuron: Neuron) => {
         val neuronLR =
@@ -69,44 +71,45 @@ object NN {
   }
 
   def propogateBackward(NN: Vector[Layer],
-    expectedOutput: Vector[Int]): Vector[Layer] = {
-    NN.reverse.zipWithIndex.map {
-      case (layer: Layer, i) =>
-        val errors = {
-          if (i != NN.size - 1) {
+                        expectedOutput: Vector[Int]): Vector[Layer] = {
 
-            layer.zipWithIndex.map {
-              case (_, j: Int) =>
-                NN(i + 1).foldLeft(0.0)((prev, neuron: Neuron) => {
-                  prev + neuron.weights(j) * neuron.errorDelta
-                })
-            }
-          } else {
+    NN.zipWithIndex.map { case(_, ind) =>
+      val i = NN.size - ind - 1
+      val errors = {
+        val layer = NN(i)
 
-            layer.zipWithIndex.map {
-              case (_, j: Int) =>
-                expectedOutput(j) - layer(j).output
-            }
+        if (i != NN.size - 1) {
+          layer.zipWithIndex.map {
+            case (_, j) =>
+              NN(i + 1).foldLeft(0.0)((prev, neuron: Neuron) => {
+                prev + neuron.weights(j) * neuron.errorDelta
+              })
+          }
+        } else {
+          layer.zipWithIndex.map {
+            case (_, j: Int) =>
+              expectedOutput(j) - layer(j).output
           }
         }
+      }
 
-        layer.zipWithIndex.map {
-          case (neuron: Neuron, j: Int) =>
-            neuron.copy(
-              errorDelta = errors(j) * sigmoidDerirative(neuron.output))
-        }
+      NN(i).zipWithIndex.map {
+        case (neuron: Neuron, j: Int) =>
+          neuron.copy(
+            errorDelta = errors(j) * sigmoidDerirative(neuron.output))
+      }
     }.reverse
   }
 
   def updateNetworkWeights(NN: Vector[Layer],
-    trainingInstance: Vector[Double],
-    learningSpeed: Double): Vector[Layer] = {
+                           trainingInstance: Vector[Double],
+                           learningSpeed: Double): Vector[Layer] = {
     NN.zipWithIndex.map {
       case (layer, index) =>
         val inputs = if (index != 0) {
           NN(index - 1).map(_.output)
         } else {
-          trainingInstance.init
+          trainingInstance.dropRight(2)
         }
 
         layer.zipWithIndex.map {
@@ -144,28 +147,29 @@ object NN {
   }
 
   def trainNetwork(NN: Vector[Layer],
-    trainingSet: Vector[Vector[Double]],
-    iter: Int,
-    nOutput: Int): Vector[Layer] = {
+                   trainingSet: Vector[Vector[Double]],
+                   iter: Int,
+                   nOutput: Int): Vector[Layer] = {
     if (iter < 0) NN
     else {
 
       var sumError = 0.0
 
-      val nextInputNN = trainingSet.zipWithIndex.foldLeft(Vector.empty[Layer])((_, curr) => {
-        val (forward, outputs) = propogateForward(NN, curr._1)
+      val nextInputNN = trainingSet.zipWithIndex.foldLeft(NN)((prev, curr) => {
+        val (forward, outputs) = propogateForward(prev, curr._1)
 
         val expectedEmpty: Vector[Int] = Vector.fill(nOutput)(0)
-        val expected = expectedEmpty.updated(curr._1.last.toInt, 1)
+        val expected                   = expectedEmpty.updated(curr._1.last.toInt, 1)
 
         sumError += expected.zipWithIndex.foldLeft(0.0)((prev, curr) => {
           prev + Math.pow(curr._1 - outputs(curr._2), 2)
         })
 
         val backward = propogateBackward(forward, expected)
-        updateNetworkWeights(backward, curr._1, 0.1) //learning rate
+        updateNetworkWeights(backward, curr._1, 1) //learning rate
       })
-      println(s"iteration: $iter, error: $sumError ${nextInputNN.last.map(_.errorDelta)}")
+      println(
+        s"iteration: $iter, error: $sumError ${nextInputNN.last.map(_.errorDelta)}")
 
       trainNetwork(nextInputNN, trainingSet, iter - 1, nOutput)
     }
