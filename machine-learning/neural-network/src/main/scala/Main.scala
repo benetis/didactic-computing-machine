@@ -1,9 +1,9 @@
-/* Some of the ideas taken from https://machinelearningmastery.com/implement-backpropagation-algorithm-scratch-python/ */
-
+// Some of the ideas taken from https://machinelearningmastery.com/implement-backpropagation-algorithm-scratch-python/
+// Other code implemented according to Gailius Raskinis Machine learning power point
 object Main extends App {
   //
   val nOutput      = 2 //0,1,2,3...
-  val nInput       = 1
+  val nInput       = 2
   val hiddenLayers = 1
   val learningRate = 0.05
   val iterations   = 500
@@ -11,12 +11,12 @@ object Main extends App {
   val finishedNN = NN.trainNetwork(
     myNN,
     Vector(
-      Vector(0.0, 0),
-      Vector(0.0, 0),
-      Vector(0.0, 0),
-      Vector(0.99, 1),
-      Vector(0.99, 1),
-      Vector(0.99, 1)
+      Vector(0.0, 0.0, 0),
+      Vector(0.99, 0.89, 1),
+      Vector(0.99, 0.89, 1),
+      Vector(0.0, 0.0, 0),
+      Vector(0.0, 0.0, 0),
+      Vector(0.99, 0.89, 1)
     ),
     iterations,
     nOutput,
@@ -24,8 +24,8 @@ object Main extends App {
   )
 
   val testSet: Vector[Vector[Double]] = Vector(
-    Vector(0.2, 0),
-    Vector(0.9, 1)
+    Vector(0.0, 0.1, 0),
+    Vector(0.99, 0.8, 1)
   )
 
   println("Trained network: ")
@@ -103,51 +103,52 @@ object NN {
       })
     }
 
-    NN.updated(NN.length - 1, lastLayerWithSigma).reverse.zipWithIndex.map {
-      case (layer: Layer, index: Int) =>
-        if (index == 0) layer
-        else {
+    NN.updated(NN.length - 1, lastLayerWithSigma)
+      .reverse
+      .zipWithIndex
+      .map {
+        case (layer: Layer, index: Int) =>
+          if (index == 0) layer
+          else {
 
-          val previousLayer = index - 1 //Because we iterate backwards
+            val previousLayer = index - 1 //Because we iterate backwards
 
-          layer.zipWithIndex.map {
-            case (neuron, neuronIndex) =>
-              neuron.copy(
-                errorDelta =
-                  neuron.output * (1 - neuron.output) * sumOfLayerErrors(
-                    previousLayer,
-                    neuronIndex))
+            layer.zipWithIndex.map {
+              case (neuron, neuronIndex) =>
+                neuron.copy(
+                  errorDelta =
+                    neuron.output * (1 - neuron.output) * sumOfLayerErrors(
+                      previousLayer,
+                      neuronIndex))
+            }
           }
-        }
-    }.reverse
+      }
+      .reverse
 
   }
 
   def updateNetworkWeights(NN: Vector[Layer],
                            trainingInstance: Vector[Double],
-                           learningSpeed: Double): Vector[Layer] = {
-    NN.zipWithIndex.map {
-      case (layer, index) =>
-        val inputs = if (index != 0) {
-          NN(index - 1).map(_.output)
-        } else {
-          trainingInstance.dropRight(2)
-        }
+                           learningRate: Double): Vector[Layer] = {
 
-        layer.zipWithIndex.map {
-          case (neuron: Neuron, j) =>
-            val updatedNeuronWeights = inputs.zipWithIndex.map {
-              case (input: Double, k: Int) =>
-                neuron.weights(k) + learningSpeed * neuron.errorDelta * input
-            }
-
-            val deltaWeight = learningSpeed * neuron.errorDelta
-
-            val weights = updatedNeuronWeights :+ (neuron.weights.last + deltaWeight)
-
-            neuron.copy(weights = weights)
-        }
+    val firstLayer: Layer = NN.head.zipWithIndex.map {
+      case (neuron: Neuron, index) =>
+        val newW = neuron.weights(index) + learningRate * trainingInstance(
+          index)
+        neuron.copy(weights = neuron.weights.updated(index, newW))
     }
+
+    val hiddenLayers: Vector[Layer] = NN.drop(1).map { layer =>
+      layer.zipWithIndex.map {
+        case (neuron, index) =>
+          val newW = neuron
+            .weights(index) + learningRate * neuron.errorDelta * NN(
+            NN.length - 2)(index).output
+          neuron.copy(weights = neuron.weights.updated(index, newW))
+      }
+    }
+
+    firstLayer +: hiddenLayers
   }
 
   /** Neuron amount in layers as arguments **/
@@ -163,9 +164,9 @@ object NN {
       }
     }
 
-    val hiddenLayer = layer(nHidden, nInputs)
+    val hiddenLayer = layer(nInputs, nInputs)
 
-    val outputLayer = layer(nOutputs, nHidden)
+    val outputLayer = layer(nOutputs, nInputs)
 
     Vector(hiddenLayer, outputLayer)
   }
