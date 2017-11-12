@@ -1,11 +1,11 @@
 // Some of the ideas taken from https://machinelearningmastery.com/implement-backpropagation-algorithm-scratch-python/
-// Other code implemented according to Gailius Raskinis Machine learning power point
+// Other code implemented according to Gailius Raskinis Machine learning course
 object Main extends App {
   //
   val nOutput      = 2 //0,1,2,3...
   val nInput       = 2
   val hiddenLayers = 1
-  val learningRate = 0.05
+  val learningRate = 0.5
   val iterations   = 500
   val myNN         = NN.initializeNN(nInput, nOutput, hiddenLayers)
   val finishedNN = NN.trainNetwork(
@@ -51,7 +51,7 @@ object NN {
 
   val r = new scala.util.Random(1)
 
-  private def neuronYForInputs(weights: Vector[Double],
+  private def neuronActivation(weights: Vector[Double],
                                inputs: Vector[Double]): Double = {
     weights
       .dropRight(1)
@@ -76,7 +76,7 @@ object NN {
     val updatedNN = NN.map((layer: Layer) => {
       layer.map((neuron: Neuron) => {
         val neuronLR =
-          neuronYForInputs(neuron.weights, trainingInstance)
+          neuronActivation(neuron.weights, trainingInstance)
         val neuronOutput = sigmoid(neuronLR)
         neuron.copy(output = neuronOutput)
       })
@@ -154,21 +154,20 @@ object NN {
   /** Neuron amount in layers as arguments **/
   def initializeNN(nInputs: Int, nOutputs: Int, nHidden: Int): Vector[Layer] = {
 
-    def layer(neuronsInLayer: Int, prevLayerNeuronN: Int): Layer = {
-      val biasInput = 1
-      Vector.fill(neuronsInLayer) {
-        val neuronWeights = Vector.fill(prevLayerNeuronN + biasInput) {
+    def layer(neuronAmount: Int, prevLayerNeuronAmount: Int): Layer = {
+//      val biasInput = 2
+      Vector.fill(neuronAmount) {
+        val weights = Vector.fill(prevLayerNeuronAmount) {
           r.nextDouble()
         }
-        Neuron(neuronWeights, 0.0, 0.0)
+        Neuron(weights, 0.0, 0.0)
       }
     }
 
-    val hiddenLayer = layer(nInputs, nInputs)
+    val hiddenLayers: Vector[Layer] = (0 to nHidden).map(_ => layer(nInputs, nInputs * 2)).toVector
+    val outputLayer: Layer = layer(nInputs, nInputs * 2)
 
-    val outputLayer = layer(nOutputs, nInputs)
-
-    Vector(hiddenLayer, outputLayer)
+    hiddenLayers :+ outputLayer
   }
 
   def trainNetwork(NN: Vector[Layer],

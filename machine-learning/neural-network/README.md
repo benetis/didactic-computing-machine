@@ -1,1 +1,2 @@
-## Implementing "Scala for machine learning exercise + tweaking it for uni
+## Implementing neuron network for machine learning course
+### Not working as expected - do not use
