@@ -4,18 +4,11 @@ import org.scalatest._
 
 class NaiveBayesSpec extends FreeSpec with Matchers {
 
-  val input = Vector(
-    TrainInst(Vector("test"), "spam"),
-    TrainInst(Vector("important", "document"), "not_spam")
-  )
+  val input = Vector("test", "important", "document")
 
-  val inputSameInDifferentRows = input ++ Vector(
-    TrainInst(Vector("important"), "not_spam")
-  )
+  val inputSameInDifferentRows = input ++ Vector("important")
 
-  val inputSameInOneRowAndDifferentRows = input ++ Vector(
-    TrainInst(Vector("important", "important"), "not_spam")
-  )
+  val inputSameInOneRowAndDifferentRows = input ++ Vector("important", "important")
 
   val diffCategoriesInput = Vector(
     TrainInst(Vector("y", "x"), "2"),
@@ -26,6 +19,17 @@ class NaiveBayesSpec extends FreeSpec with Matchers {
 
 
   "word frequencies" - {
+
+    "should output word frequencies with categories split" in {
+      assert(
+        WordFrequency.splitCategoriesWithFrequencies(diffCategoriesInput) ==
+          Map(
+            "1" -> Map("x" -> 1),
+            "2" -> Map("y" -> 1, "x" -> 2),
+            "3" -> Map("x" -> 1)
+          )
+      )
+    }
 
     "should split different categories into separate Maps" in {
       assert(

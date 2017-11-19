@@ -20,10 +20,19 @@ object NaiveBayes {
 }
 
 object WordFrequency {
-  def wordFrequencyList(trainingSet: Vector[TrainInst]): Map[String, Int] = {
-    trainingSet
-      .flatMap(_.words.groupBy(identity).mapValues(_.size))
-      .foldLeft(Map.empty[String, Int])((prev: Map[String, Int], curr) => {
+
+  type WordFreq = Map[String, Int]
+  type Category = String
+
+  def splitCategoriesWithFrequencies(trainingSet: Vector[TrainInst]): Map[Category, WordFreq] = {
+    val categoryMaps = splitIntoCategoryMaps(trainingSet)
+    categoryMaps.mapValues(wordFrequencyList)
+  }
+
+  def wordFrequencyList(wordsList: Vector[String]): WordFreq = {
+    wordsList
+      .groupBy(identity).mapValues(_.size)
+      .foldLeft(Map.empty[String, Int])((prev: WordFreq, curr) => {
         val word = curr._1
         val freq = curr._2
         prev |+| Map(word -> freq)
