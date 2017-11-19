@@ -4,14 +4,10 @@ import breeze.linalg.DenseMatrix
 import scalaz.Scalaz._
 
 object SpamFilter extends App {
-//  val input = Vector(
-//    TrainInst(Vector("test", "testas"), "test"),
-//    TrainInst(Vector("00", "000"), "00"),
-//    TrainInst(Vector("00", "0000"), "00")
-//  )
-//
+  val data = Loader.loadData()
 
-  Loader.loadData()
+  val catsWithFreqs = WordFrequency.splitCategoriesWithFrequencies(data)
+  println(catsWithFreqs)
 }
 
 case class TrainInst(words: Vector[String], category: String)
@@ -65,18 +61,18 @@ trait DataParser {
   val spam    = "spam"
   val notSpam = "ham"
 
-  val cleanSet = ",.!".toSet
+  val cleanSet = ",.!?:".toSet
 
   def trimLine(line: String): TrainInst = {
 
     def buildInstance(cat: String): TrainInst = {
       TrainInst(line
                   .drop(cat.length + 1)
+                  .trim
                   .split(" ")
-                  .map(_.trim)
                   .map(_.filterNot(cleanSet))
                   .toVector,
-                notSpam)
+        cat)
     }
 
     if (line.charAt(0) == spam.charAt(0)) {
