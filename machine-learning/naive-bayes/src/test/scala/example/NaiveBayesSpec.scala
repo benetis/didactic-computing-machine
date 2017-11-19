@@ -5,20 +5,38 @@ import org.scalatest._
 class NaiveBayesSpec extends FreeSpec with Matchers {
 
   val input = Vector(
-    TrainingInstance(Vector("test"), "spam"),
-    TrainingInstance(Vector("important", "document"), "not_spam")
+    TrainInst(Vector("test"), "spam"),
+    TrainInst(Vector("important", "document"), "not_spam")
   )
 
   val inputSameInDifferentRows = input ++ Vector(
-    TrainingInstance(Vector("important"), "not_spam")
+    TrainInst(Vector("important"), "not_spam")
   )
 
   val inputSameInOneRowAndDifferentRows = input ++ Vector(
-    TrainingInstance(Vector("important", "important"), "not_spam")
+    TrainInst(Vector("important", "important"), "not_spam")
+  )
+
+  val diffCategoriesInput = Vector(
+    TrainInst(Vector("y", "x"), "2"),
+    TrainInst(Vector("x"), "1"),
+    TrainInst(Vector("x"), "2"),
+    TrainInst(Vector("x"), "3")
   )
 
 
   "word frequencies" - {
+
+    "should split different categories into separate Maps" in {
+      assert(
+        WordFrequency.splitIntoCategoryMaps(diffCategoriesInput) ==
+        Map(
+          "1" -> Vector("x"),
+          "2" -> Vector("y", "x", "x"),
+          "3" -> Vector("x")
+        ))
+    }
+
     "should generate a list of unique words" in {
       assert(
         WordFrequency.wordFrequencyList(input) ==

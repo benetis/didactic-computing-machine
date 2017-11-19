@@ -1,18 +1,17 @@
 package example
 //import breeze.linalg._
 import breeze.linalg.DenseMatrix
-import scalaz._
-import Scalaz._
+import scalaz.Scalaz._
 
 object SpamFilter extends App {
   val input = Vector(
-    TrainingInstance(Vector("test", "testas"), "test"),
-    TrainingInstance(Vector("00", "000"), "00"),
-    TrainingInstance(Vector("00", "0000"), "00")
+    TrainInst(Vector("test", "testas"), "test"),
+    TrainInst(Vector("00", "000"), "00"),
+    TrainInst(Vector("00", "0000"), "00")
   )
 }
 
-case class TrainingInstance(words: Vector[String], category: String)
+case class TrainInst(words: Vector[String], category: String)
 
 object NaiveBayes {
 
@@ -21,8 +20,7 @@ object NaiveBayes {
 }
 
 object WordFrequency {
-  def wordFrequencyList(
-    trainingSet: Vector[TrainingInstance]): Map[String, Int] = {
+  def wordFrequencyList(trainingSet: Vector[TrainInst]): Map[String, Int] = {
     trainingSet
       .flatMap(_.words.groupBy(identity).mapValues(_.size))
       .foldLeft(Map.empty[String, Int])((prev: Map[String, Int], curr) => {
@@ -30,5 +28,12 @@ object WordFrequency {
         val freq = curr._2
         prev |+| Map(word -> freq)
       })
+  }
+
+  def splitIntoCategoryMaps(
+    trainingSet: Vector[TrainInst]): Map[String, Vector[String]] = {
+    trainingSet.foldLeft(Map.empty[String, Vector[String]])(
+      (prev, curr: TrainInst) =>
+        prev |+| Map(curr.category -> curr.words))
   }
 }
