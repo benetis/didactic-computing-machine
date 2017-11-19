@@ -21,21 +21,21 @@ class NaiveBayesSpec extends FreeSpec with Matchers {
   "word frequencies" - {
     "should generate a list of unique words" in {
       assert(
-        NaiveBayes.wordFrequencyList(input) ==
+        WordFrequency.wordFrequencyList(input) ==
           Map("test" -> 1, "important" -> 1, "document" -> 1)
       )
     }
 
     "should count increment number if word appears twice in different rows" in {
       assert(
-        NaiveBayes.wordFrequencyList(inputSameInDifferentRows) ==
+        WordFrequency.wordFrequencyList(inputSameInDifferentRows) ==
           Map("test" -> 1, "important" -> 2, "document" -> 1)
       )
     }
 
     "should count increment number if word appears twice in same training" in {
       assert(
-        NaiveBayes.wordFrequencyList(inputSameInOneRowAndDifferentRows) ==
+        WordFrequency.wordFrequencyList(inputSameInOneRowAndDifferentRows) ==
           Map("test" -> 1, "important" -> 3, "document" -> 1)
       )
     }

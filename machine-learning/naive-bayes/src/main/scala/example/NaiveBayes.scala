@@ -18,15 +18,17 @@ object NaiveBayes {
 
   val lossMatrix = DenseMatrix((0, 10), (1, 0))
 
+}
+
+object WordFrequency {
   def wordFrequencyList(
-      trainingSet: Vector[TrainingInstance]): Map[String, Int] = {
+    trainingSet: Vector[TrainingInstance]): Map[String, Int] = {
     trainingSet
       .flatMap(_.words.groupBy(identity).mapValues(_.size))
       .foldLeft(Map.empty[String, Int])((prev: Map[String, Int], curr) => {
         val word = curr._1
         val freq = curr._2
-        val updated = prev |+| Map(word -> freq)
-        updated
+        prev |+| Map(word -> freq)
       })
   }
 }
