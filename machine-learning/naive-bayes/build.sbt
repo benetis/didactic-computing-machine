@@ -8,5 +8,10 @@ lazy val root = (project in file(".")).
       version      := "0.1.0-SNAPSHOT"
     )),
     name := "Hello",
-    libraryDependencies += scalaTest % Test
+    libraryDependencies ++= Seq(
+      scalaTest % Test,
+      "org.scalanlp" %% "breeze" % "0.13.2",
+      "org.scalanlp" %% "breeze-viz" % "0.13.2",
+      "org.scalaz" %% "scalaz-core" % "7.2.16"
+    )
   )
