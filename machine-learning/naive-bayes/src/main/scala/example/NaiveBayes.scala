@@ -1,11 +1,9 @@
 package example
-//import breeze.linalg._
-import breeze.linalg.DenseMatrix
 import example.WordFrequency.{Category, WordFreq}
 import scalaz.Scalaz._
 
 object SpamFilter extends App with DataParser {
-  val data     = Loader.loadData()
+  val data = Loader.loadData()
 
   val catsWithFreqs = WordFrequency.splitCategoriesWithFrequencies(data)
   println(catsWithFreqs)
@@ -15,27 +13,37 @@ case class TrainInst(words: Vector[String], category: String)
 
 object NaiveBayes {
 
-  val lossMatrix = DenseMatrix((0, 10), (1, 0))
-
   def classify(words: Vector[String],
-               catsWithWordFreq: Map[Category, WordFreq], data: => Vector[TrainInst]): (String, Double) = {
-    val catProbs = catsWithWordFreq.mapValues((category: WordFreq) => {
+               catsWithWordFreq: Map[Category, WordFreq],
+               data: => Vector[TrainInst]): Category = {
+    val catProbs: Vector[(Category, Double, Int)] = catsWithWordFreq.map {
+      case ((category, wordFreq)) =>
+        val catN =
+          data.count(_.category == category)
 
-      val catN = data.count(_.category == category)
+        val sameWords: WordFreq = wordFreq.filterKeys(c => words.contains(c))
+        val diffWords           = wordFreq.filterKeys(c => !words.contains(c))
 
-      val sameWords: WordFreq = category.filterKeys(c => words.contains(c))
-      val diffWords = category.filterKeys(c => !words.contains(c))
+        val sameWordsProb = sameWords.values
+        val diffWordsProb = diffWords.values.map(x => math.abs(x - catN))
+
+        (category, (sameWordsProb ++ diffWordsProb).product / math.pow(catN, data.size), catN)
+
+    }.toVector
+
+    val catA = catProbs.head
+    val catB = catProbs.last
+
+    val pA = catA._3.toDouble / data.size
+    val pB = catB._3.toDouble / data.size
 
 
-      val sameWordsProb = sameWords.values
-      val diffWordsProb = diffWords.values.map(x => math.abs(x - catN))
+    val isCatA = catA._2 / catB._2
 
-      (sameWordsProb ++ diffWordsProb).product / math.pow(catN, data.size)
+    val isCatB = ((10 - 0) * pB) / ((1 - 0) * pA)
 
-    })
-
-    catProbs.max
-
+    if(isCatA > isCatB) catA._1
+    else catB._1
   }
 
 }

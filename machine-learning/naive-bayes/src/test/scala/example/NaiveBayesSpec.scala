@@ -14,8 +14,27 @@ class NaiveBayesSpec extends FreeSpec with Matchers {
   val diffCategoriesInput = Vector(
     TrainInst(Vector("y", "x"), "2"),
     TrainInst(Vector("x"), "1"),
-    TrainInst(Vector("x"), "2"),
-    TrainInst(Vector("x"), "3")
+    TrainInst(Vector("x"), "2")
+  )
+
+  val sanityTest = Vector(
+    TrainInst(Vector("x", "x"), "spam"),
+    TrainInst(Vector("y", "y"), "not_spam"),
+    TrainInst(Vector("x", "x"), "spam"),
+    TrainInst(Vector("y", "y"), "not_spam"),
+    TrainInst(Vector("x", "x"), "spam"),
+    TrainInst(Vector("y", "y"), "not_spam"),
+    TrainInst(Vector("x", "x"), "spam"),
+    TrainInst(Vector("x", "x"), "spam"),
+    TrainInst(Vector("x", "x"), "spam"),
+    TrainInst(Vector("x", "x"), "spam"),
+    TrainInst(Vector("x", "x"), "spam"),
+    TrainInst(Vector("x", "x"), "spam"),
+    TrainInst(Vector("y", "y"), "not_spam"),
+    TrainInst(Vector("y", "y"), "not_spam"),
+    TrainInst(Vector("y", "y"), "not_spam"),
+    TrainInst(Vector("y", "y"), "not_spam"),
+    TrainInst(Vector("y", "y"), "not_spam")
   )
 
   "word frequencies" - {
@@ -25,8 +44,7 @@ class NaiveBayesSpec extends FreeSpec with Matchers {
         WordFrequency.splitCategoriesWithFrequencies(diffCategoriesInput) ==
           Map(
             "1" -> Map("x" -> 1),
-            "2" -> Map("y" -> 1, "x" -> 2),
-            "3" -> Map("x" -> 1)
+            "2" -> Map("y" -> 1, "x" -> 2)
           )
       )
     }
@@ -36,8 +54,7 @@ class NaiveBayesSpec extends FreeSpec with Matchers {
         WordFrequency.splitIntoCategoryMaps(diffCategoriesInput) ==
           Map(
             "1" -> Vector("x"),
-            "2" -> Vector("y", "x", "x"),
-            "3" -> Vector("x")
+            "2" -> Vector("y", "x", "x")
           ))
     }
 
@@ -64,16 +81,23 @@ class NaiveBayesSpec extends FreeSpec with Matchers {
   }
 
   "classification" - {
-    "should return probability that sentence is spam and not spam" in {
-
-      val mySentence = Vector("x", "y")
+    "should return work for both features for sanity check training set" in {
 
       assert(
         NaiveBayes.classify(
-          mySentence,
-          WordFrequency.splitCategoriesWithFrequencies(diffCategoriesInput),
-          diffCategoriesInput
-        ) == ("2", 0.70)
+          Vector("x", "x"),
+          WordFrequency.splitCategoriesWithFrequencies(sanityTest),
+          sanityTest
+        ) == "spam"
+      )
+
+
+      assert(
+        NaiveBayes.classify(
+          Vector("y", "y"),
+          WordFrequency.splitCategoriesWithFrequencies(sanityTest),
+          sanityTest
+        ) == "not_spam"
       )
     }
   }
