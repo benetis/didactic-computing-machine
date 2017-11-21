@@ -61,54 +61,56 @@ class NaiveBayesSpec extends FreeSpec with Matchers {
   }
 
   "classification" - {
-//    "should return spam/not_spam for both features for sanity check training set" in {
-//
-//      val sanityTest = Vector(
-//        TrainInst(Vector("x", "x"), "spam"),
-//        TrainInst(Vector("y", "y"), "not_spam"),
-//        TrainInst(Vector("x", "x"), "spam"),
-//        TrainInst(Vector("y", "y"), "not_spam"),
-//        TrainInst(Vector("x", "x"), "spam"),
-//        TrainInst(Vector("y", "y"), "not_spam"),
-//        TrainInst(Vector("x", "x"), "spam"),
-//        TrainInst(Vector("x", "x"), "spam"),
-//        TrainInst(Vector("x", "x"), "spam"),
-//        TrainInst(Vector("x", "x"), "spam"),
-//        TrainInst(Vector("x", "x"), "spam"),
-//        TrainInst(Vector("x", "x"), "spam"),
-//        TrainInst(Vector("y", "y"), "not_spam"),
-//        TrainInst(Vector("y", "y"), "not_spam"),
-//        TrainInst(Vector("y", "y"), "not_spam"),
-//        TrainInst(Vector("y", "y"), "not_spam"),
-//        TrainInst(Vector("y", "y"), "not_spam")
-//      )
-//
-//      assert(
-//        NaiveBayes.classify(
-//          Vector("x", "x"),
-//          WordFrequency.splitCategoriesWithFrequencies(sanityTest),
-//          sanityTest
-//        ) == "spam"
-//      )
-//
-//      assert(
-//        NaiveBayes.classify(
-//          Vector("y", "y"),
-//          WordFrequency.splitCategoriesWithFrequencies(sanityTest),
-//          sanityTest
-//        ) == "not_spam"
-//      )
-//    }
+    "should return spam/not_spam for both features for sanity check training set" in {
+
+      val sanityTest = Vector(
+        TrainInst(Vector("x", "x"), "spam"),
+        TrainInst(Vector("y", "y"), "not_spam"),
+        TrainInst(Vector("x", "x"), "spam"),
+        TrainInst(Vector("y", "y"), "not_spam"),
+        TrainInst(Vector("x", "x"), "spam"),
+        TrainInst(Vector("y", "y"), "not_spam"),
+        TrainInst(Vector("x", "x"), "spam"),
+        TrainInst(Vector("x", "x"), "spam"),
+        TrainInst(Vector("x", "x"), "spam"),
+        TrainInst(Vector("x", "x"), "spam"),
+        TrainInst(Vector("x", "x"), "spam"),
+        TrainInst(Vector("x", "x"), "spam"),
+        TrainInst(Vector("y", "y"), "not_spam"),
+        TrainInst(Vector("y", "y"), "not_spam"),
+        TrainInst(Vector("y", "y"), "not_spam"),
+        TrainInst(Vector("y", "y"), "not_spam"),
+        TrainInst(Vector("y", "y"), "not_spam")
+      )
+
+      assert(
+        NaiveBayes.classify(
+          Vector("x", "x"),
+          WordFrequency.splitCategoriesWithFrequencies(sanityTest),
+          sanityTest
+        ) == "spam"
+      )
+
+      assert(
+        NaiveBayes.classify(
+          Vector("y", "y"),
+          WordFrequency.splitCategoriesWithFrequencies(sanityTest),
+          sanityTest
+        ) == "not_spam"
+      )
+    }
 
     "should return that its spam given multiple different words" in {
 
       val trainingSet = Vector(
         TrainInst(Vector("w", "y", "w"), "not_spam"),
+        TrainInst(Vector("x", "x", "w"), "spam"),
         TrainInst(Vector("x", "x", "x"), "spam"),
         TrainInst(Vector("x", "x", "x"), "spam"),
         TrainInst(Vector("x", "x", "x"), "spam"),
         TrainInst(Vector("w", "y", "w"), "not_spam"),
         TrainInst(Vector("w", "y", "w"), "not_spam"),
+        TrainInst(Vector("w", "x", "w"), "not_spam"),
         TrainInst(Vector("w", "y", "w"), "not_spam"),
         TrainInst(Vector("w", "y", "w"), "not_spam"),
         TrainInst(Vector("w", "y", "w"), "not_spam"),
