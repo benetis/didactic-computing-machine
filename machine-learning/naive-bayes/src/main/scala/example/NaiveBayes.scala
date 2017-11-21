@@ -5,8 +5,11 @@ import scalaz.Scalaz._
 object SpamFilter extends App with DataParser {
   val data = Loader.loadData()
 
-  val catsWithFreqs = WordFrequency.splitCategoriesWithFrequencies(data)
-  println(catsWithFreqs)
+  println(NaiveBayes.classify(
+    Vector("Filthy"),
+    WordFrequency.splitCategoriesWithFrequencies(data),
+    data
+  ))
 }
 
 case class TrainInst(words: Vector[String], category: String)
@@ -27,7 +30,9 @@ object NaiveBayes {
         val sameWordsProb = sameWords.values
         val diffWordsProb = diffWords.values.map(x => math.abs(x - catN))
 
-        (category, (sameWordsProb ++ diffWordsProb).product / math.pow(catN, data.size), catN)
+        (category,
+         (sameWordsProb ++ diffWordsProb).product / math.pow(catN, data.size),
+         catN)
 
     }.toVector
 
@@ -37,12 +42,11 @@ object NaiveBayes {
     val pA = catA._3.toDouble / data.size
     val pB = catB._3.toDouble / data.size
 
-
     val isCatA = catA._2 / catB._2
 
     val isCatB = ((10 - 0) * pB) / ((1 - 0) * pA)
 
-    if(isCatA > isCatB) catA._1
+    if (isCatA > isCatB) catA._1
     else catB._1
   }
 
