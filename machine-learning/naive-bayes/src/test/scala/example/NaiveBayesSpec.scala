@@ -19,6 +19,16 @@ class NaiveBayesSpec extends FreeSpec with Matchers {
 
   "word frequencies" - {
 
+    "should make all words lowercase and group as one" in {
+
+      val upperAndLower = Vector("UPPER", "Upper", "upper")
+
+      assert(
+        WordFrequency.wordFrequencyList(upperAndLower) ==
+          Map("upper" -> 3)
+      )
+    }
+
     "should output word frequencies with categories split" in {
       assert(
         WordFrequency.splitCategoriesWithFrequencies(diffCategoriesInput) ==

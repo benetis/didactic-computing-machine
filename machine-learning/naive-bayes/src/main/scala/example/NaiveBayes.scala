@@ -6,7 +6,7 @@ object SpamFilter extends App with DataParser {
   val data = Loader.loadData()
 
   println(NaiveBayes.classify(
-    Vector("Filthy"),
+    "the highest bid is now".split(" ").toVector,
     WordFrequency.splitCategoriesWithFrequencies(data),
     data
   ))
@@ -27,8 +27,8 @@ object NaiveBayes {
         val sameWords: WordFreq = wordFreq.filterKeys(c => words.contains(c))
         val diffWords           = wordFreq.filterKeys(c => !words.contains(c))
 
-        val sameWordsProb = sameWords.values.map(_ + 1)
-        val diffWordsProb = diffWords.values.map(x => math.abs(x - catN) + 1)
+        val sameWordsProb = sameWords.values.map(_ + 1.0)
+        val diffWordsProb = diffWords.values.map(x => math.abs(catN - x) + 1.0).filterNot(_ == 0)
 
         (category,
          (sameWordsProb ++ diffWordsProb).product / math.pow(catN, data.size),
@@ -68,7 +68,7 @@ object WordFrequency {
       .groupBy(identity)
       .mapValues(_.size)
       .foldLeft(Map.empty[String, Int])((prev: WordFreq, curr) => {
-        val word = curr._1
+        val word = curr._1.toLowerCase
         val freq = curr._2
         prev |+| Map(word -> freq)
       })
