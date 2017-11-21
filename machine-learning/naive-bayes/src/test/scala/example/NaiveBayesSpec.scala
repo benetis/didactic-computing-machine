@@ -9,7 +9,7 @@ class NaiveBayesSpec extends FreeSpec with Matchers {
   val inputSameInDifferentRows = input ++ Vector("important")
 
   val inputSameInOneRowAndDifferentRows = input ++ Vector("important",
-    "important")
+                                                          "important")
 
   val diffCategoriesInput = Vector(
     TrainInst(Vector("y", "x"), "2"),
@@ -74,23 +74,23 @@ class NaiveBayesSpec extends FreeSpec with Matchers {
     "should return spam/not_spam for both features for sanity check training set" in {
 
       val sanityTest = Vector(
-        TrainInst(Vector("x", "x"), "spam"),
-        TrainInst(Vector("y", "y"), "not_spam"),
-        TrainInst(Vector("x", "x"), "spam"),
-        TrainInst(Vector("y", "y"), "not_spam"),
-        TrainInst(Vector("x", "x"), "spam"),
-        TrainInst(Vector("y", "y"), "not_spam"),
-        TrainInst(Vector("x", "x"), "spam"),
-        TrainInst(Vector("x", "x"), "spam"),
-        TrainInst(Vector("x", "x"), "spam"),
-        TrainInst(Vector("x", "x"), "spam"),
-        TrainInst(Vector("x", "x"), "spam"),
-        TrainInst(Vector("x", "x"), "spam"),
-        TrainInst(Vector("y", "y"), "not_spam"),
-        TrainInst(Vector("y", "y"), "not_spam"),
-        TrainInst(Vector("y", "y"), "not_spam"),
-        TrainInst(Vector("y", "y"), "not_spam"),
-        TrainInst(Vector("y", "y"), "not_spam")
+        TrainInst(Vector("x"), "spam"),
+        TrainInst(Vector("y"), "not_spam"),
+        TrainInst(Vector("x"), "spam"),
+        TrainInst(Vector("y"), "not_spam"),
+        TrainInst(Vector("x"), "spam"),
+        TrainInst(Vector("y"), "not_spam"),
+        TrainInst(Vector("x"), "spam"),
+        TrainInst(Vector("x"), "spam"),
+        TrainInst(Vector("x"), "spam"),
+        TrainInst(Vector("x"), "spam"),
+        TrainInst(Vector("x"), "spam"),
+        TrainInst(Vector("x"), "spam"),
+        TrainInst(Vector("y"), "not_spam"),
+        TrainInst(Vector("y"), "not_spam"),
+        TrainInst(Vector("y"), "not_spam"),
+        TrainInst(Vector("y"), "not_spam"),
+        TrainInst(Vector("y"), "not_spam")
       )
 
       assert(
@@ -129,7 +129,6 @@ class NaiveBayesSpec extends FreeSpec with Matchers {
         TrainInst(Vector("x", "y", "x"), "spam"),
         TrainInst(Vector("x", "y", "x"), "spam"),
         TrainInst(Vector("x", "y", "x"), "spam")
-
       )
 
       assert(
@@ -145,6 +144,45 @@ class NaiveBayesSpec extends FreeSpec with Matchers {
           Vector("x"),
           WordFrequency.splitCategoriesWithFrequencies(trainingSet),
           trainingSet
+        ) == "spam"
+      )
+    }
+
+    "should classify 'real world spam' as spam" in {
+
+      def splitW(s: String) = s.split(" ").toVector
+
+      val input = Vector(
+        TrainInst(
+          splitW(
+            "thanks for your ringtone order, reference number x49. your mobile will be charged 4.50. should your tone not arrive please call customer services 09065989182"
+          ),
+          "spam"
+        ),
+        TrainInst(
+          splitW(
+            "dear voucher holder 2 claim your 1st class airport lounge passes when using your holiday voucher call 08704439680. when booking quote 1st class x 2"),
+          "spam"
+        ),
+        TrainInst(
+          splitW(
+            "ok... but bag again.."
+          ),
+          "not_spam"
+        ),
+        TrainInst(
+          splitW(
+            "let me know if you need anything else. salad or desert or something... how many beers shall i get?"
+          ),
+          "not_spam"
+        )
+      )
+
+      assert(
+        NaiveBayes.classify(
+          Vector("order"),
+          WordFrequency.splitCategoriesWithFrequencies(input),
+          input
         ) == "spam"
       )
     }

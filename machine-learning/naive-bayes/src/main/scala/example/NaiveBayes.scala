@@ -22,7 +22,7 @@ object NaiveBayes {
     val catProbs: Vector[(Category, Double, Int)] = catsWithWordFreq.map {
       case ((category, wordFreq)) =>
         val catN =
-          data.count(_.category == category) + 1
+          data.count(_.category == category)
 
         val sameWords: WordFreq = wordFreq.filterKeys(c => words.contains(c))
         val diffWords           = wordFreq.filterKeys(c => !words.contains(c))
@@ -31,7 +31,7 @@ object NaiveBayes {
         val diffWordsProb = diffWords.values.map(x => math.abs(catN - x) + 1.0).filterNot(_ == 0)
 
         (category,
-         (sameWordsProb ++ diffWordsProb).product / math.pow(catN, data.size),
+         (sameWordsProb ++ diffWordsProb).product / math.pow(catN + 1, data.size),
          catN)
 
     }.toVector
