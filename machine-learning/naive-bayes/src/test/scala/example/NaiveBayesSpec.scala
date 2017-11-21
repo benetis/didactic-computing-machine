@@ -8,7 +8,8 @@ class NaiveBayesSpec extends FreeSpec with Matchers {
 
   val inputSameInDifferentRows = input ++ Vector("important")
 
-  val inputSameInOneRowAndDifferentRows = input ++ Vector("important", "important")
+  val inputSameInOneRowAndDifferentRows = input ++ Vector("important",
+                                                          "important")
 
   val diffCategoriesInput = Vector(
     TrainInst(Vector("y", "x"), "2"),
@@ -16,7 +17,6 @@ class NaiveBayesSpec extends FreeSpec with Matchers {
     TrainInst(Vector("x"), "2"),
     TrainInst(Vector("x"), "3")
   )
-
 
   "word frequencies" - {
 
@@ -34,11 +34,11 @@ class NaiveBayesSpec extends FreeSpec with Matchers {
     "should split different categories into separate Maps" in {
       assert(
         WordFrequency.splitIntoCategoryMaps(diffCategoriesInput) ==
-        Map(
-          "1" -> Vector("x"),
-          "2" -> Vector("y", "x", "x"),
-          "3" -> Vector("x")
-        ))
+          Map(
+            "1" -> Vector("x"),
+            "2" -> Vector("y", "x", "x"),
+            "3" -> Vector("x")
+          ))
     }
 
     "should generate a list of unique words" in {
@@ -59,6 +59,21 @@ class NaiveBayesSpec extends FreeSpec with Matchers {
       assert(
         WordFrequency.wordFrequencyList(inputSameInOneRowAndDifferentRows) ==
           Map("test" -> 1, "important" -> 3, "document" -> 1)
+      )
+    }
+  }
+
+  "classification" - {
+    "should return probability that sentence is spam and not spam" in {
+
+      val mySentence = Vector("x", "y")
+
+      assert(
+        NaiveBayes.classify(
+          mySentence,
+          WordFrequency.splitCategoriesWithFrequencies(diffCategoriesInput),
+          diffCategoriesInput
+        ) == ("2", 0.70)
       )
     }
   }

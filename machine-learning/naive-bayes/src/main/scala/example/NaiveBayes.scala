@@ -1,10 +1,11 @@
 package example
 //import breeze.linalg._
 import breeze.linalg.DenseMatrix
+import example.WordFrequency.{Category, WordFreq}
 import scalaz.Scalaz._
 
-object SpamFilter extends App {
-  val data = Loader.loadData()
+object SpamFilter extends App with DataParser {
+  val data     = Loader.loadData()
 
   val catsWithFreqs = WordFrequency.splitCategoriesWithFrequencies(data)
   println(catsWithFreqs)
@@ -15,6 +16,27 @@ case class TrainInst(words: Vector[String], category: String)
 object NaiveBayes {
 
   val lossMatrix = DenseMatrix((0, 10), (1, 0))
+
+  def classify(words: Vector[String],
+               catsWithWordFreq: Map[Category, WordFreq], data: => Vector[TrainInst]): (String, Double) = {
+    val catProbs = catsWithWordFreq.mapValues((category: WordFreq) => {
+
+      val catN = data.count(_.category == category)
+
+      val sameWords: WordFreq = category.filterKeys(c => words.contains(c))
+      val diffWords = category.filterKeys(c => !words.contains(c))
+
+
+      val sameWordsProb = sameWords.values
+      val diffWordsProb = diffWords.values.map(x => math.abs(x - catN))
+
+      (sameWordsProb ++ diffWordsProb).product / math.pow(catN, data.size)
+
+    })
+
+    catProbs.max
+
+  }
 
 }
 
@@ -72,7 +94,7 @@ trait DataParser {
                   .split(" ")
                   .map(_.filterNot(cleanSet))
                   .toVector,
-        cat)
+                cat)
     }
 
     if (line.charAt(0) == spam.charAt(0)) {
