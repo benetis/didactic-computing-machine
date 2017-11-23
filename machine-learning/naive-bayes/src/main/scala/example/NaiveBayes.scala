@@ -5,8 +5,15 @@ import scalaz.Scalaz._
 object SpamFilter extends App with DataParser {
   val data = Loader.loadData()
 
+  println(
+    NaiveBayes.classify(
+    "number rate number rate number rate call".split(" ").toVector,
+      WordFrequency.splitCategoriesWithFrequencies(data),
+      data
+    ))
+
   println(NaiveBayes.classify(
-    "the highest bid is now".split(" ").toVector,
+    "i am going to sleep".split(" ").toVector,
     WordFrequency.splitCategoriesWithFrequencies(data),
     data
   ))
@@ -21,18 +28,26 @@ object NaiveBayes {
                data: => Vector[TrainInst]): Category = {
     val catProbs: Vector[(Category, Double, Int)] = catsWithWordFreq.map {
       case ((category, wordFreq)) =>
-        val catN =
+        val trainingExamplesOfCategory =
           data.count(_.category == category)
 
         val sameWords: WordFreq = wordFreq.filterKeys(c => words.contains(c))
         val diffWords           = wordFreq.filterKeys(c => !words.contains(c))
 
-        val sameWordsProb = sameWords.values.map(_ + 1.0)
-        val diffWordsProb = diffWords.values.map(x => math.abs(catN - x) + 1.0).filterNot(_ == 0)
+        val alpha             = 1 / 3.toDouble
+        val smoothedTrainingN: Double = trainingExamplesOfCategory + alpha * 2
+
+        val sameWordsProb =
+          sameWords.values.map(y => (y + alpha) / smoothedTrainingN.toDouble)
+        val diffWordsProb = diffWords.values
+          .map(x =>
+            (math
+              .abs(smoothedTrainingN - x) + alpha) / smoothedTrainingN.toDouble)
+          .filterNot(_ == 0)
 
         (category,
-         (sameWordsProb ++ diffWordsProb).product / math.pow(catN + 1, data.size),
-         catN)
+         (sameWordsProb ++ diffWordsProb).reduce(_ + math.log(_)),
+         trainingExamplesOfCategory)
 
     }.toVector
 
@@ -42,9 +57,9 @@ object NaiveBayes {
     val pA = catA._3.toDouble / data.size
     val pB = catB._3.toDouble / data.size
 
-    val isCatA = catA._2 / catB._2
+    val isCatA = catA._2 - catB._2
 
-    val isCatB = ((10 - 0) * pB) / ((1 - 0) * pA)
+    val isCatB = math.log(((5 - 0) * pB) / ((1 - 0) * pA))
 
     if (isCatA > isCatB) catA._1
     else catB._1
@@ -95,7 +110,7 @@ trait DataParser {
   val spam    = "spam"
   val notSpam = "ham"
 
-  val cleanSet = ",.!?:".toSet
+  val cleanSet = ",.!?:\"#+".toSet
 
   def trimLine(line: String): TrainInst = {
 

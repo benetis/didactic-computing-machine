@@ -93,13 +93,13 @@ class NaiveBayesSpec extends FreeSpec with Matchers {
         TrainInst(Vector("y"), "not_spam")
       )
 
-      assert(
-        NaiveBayes.classify(
-          Vector("x", "x"),
-          WordFrequency.splitCategoriesWithFrequencies(sanityTest),
-          sanityTest
-        ) == "spam"
-      )
+//      assert(
+//        NaiveBayes.classify(
+//          Vector("x", "x"),
+//          WordFrequency.splitCategoriesWithFrequencies(sanityTest),
+//          sanityTest
+//        ) == "spam"
+//      )
 
       assert(
         NaiveBayes.classify(
