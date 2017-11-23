@@ -8,13 +8,13 @@ object SpamFilter extends App with DataParser {
   println(
     NaiveBayes.classify(
     "number rate number rate number rate call".split(" ").toVector,
-      WordFrequency.splitCategoriesWithFrequencies(data),
+      WordFrequency.wordFrequencyList(data),
       data
     ))
 
   println(NaiveBayes.classify(
     "i am going to sleep".split(" ").toVector,
-    WordFrequency.splitCategoriesWithFrequencies(data),
+    WordFrequency.wordFrequencyList(data),
     data
   ))
 }
@@ -34,7 +34,7 @@ object NaiveBayes {
         val sameWords: WordFreq = wordFreq.filterKeys(c => words.contains(c))
         val diffWords           = wordFreq.filterKeys(c => !words.contains(c))
 
-        val alpha             = 1 / 3.toDouble
+        val alpha                     = 1 / 3.toDouble
         val smoothedTrainingN: Double = trainingExamplesOfCategory + alpha * 2
 
         val sameWordsProb =
@@ -72,27 +72,18 @@ object WordFrequency {
   type WordFreq = Map[String, Int]
   type Category = String
 
-  def splitCategoriesWithFrequencies(
-      trainingSet: Vector[TrainInst]): Map[Category, WordFreq] = {
-    val categoryMaps = splitIntoCategoryMaps(trainingSet)
-    categoryMaps.mapValues(wordFrequencyList)
-  }
+  def wordFrequencyList(trainSet: Vector[TrainInst]): Map[String, WordFreq] = {
 
-  def wordFrequencyList(wordsList: Vector[String]): WordFreq = {
-    wordsList
-      .groupBy(identity)
-      .mapValues(_.size)
-      .foldLeft(Map.empty[String, Int])((prev: WordFreq, curr) => {
-        val word = curr._1.toLowerCase
-        val freq = curr._2
-        prev |+| Map(word -> freq)
-      })
-  }
-
-  def splitIntoCategoryMaps(
-      trainingSet: Vector[TrainInst]): Map[String, Vector[String]] = {
-    trainingSet.foldLeft(Map.empty[String, Vector[String]])(
-      (prev, curr: TrainInst) => prev |+| Map(curr.category -> curr.words))
+    trainSet
+      .foldLeft(Map.empty[String, WordFreq])(
+        (prev: Map[String, WordFreq], curr: TrainInst) => {
+          val words: Map[String, Map[String, Int]] = curr.words
+            .map(_.toLowerCase())
+            .groupBy(identity)
+            .mapValues(_.size)
+            .mapValues(v => Map(curr.category -> v))
+          prev |+| words
+        })
   }
 }
 
