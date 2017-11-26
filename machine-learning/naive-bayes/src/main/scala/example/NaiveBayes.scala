@@ -6,19 +6,23 @@ import scalaz.Semigroup
 object SpamFilter extends App with DataParser {
   val data = Loader.loadData()
 
-  println(
-    NaiveBayes.classify(
-      "rate rate rate".split(" ").toVector,
-      WordFrequency.wordFrequencyList(data),
-      data
-    ))
+  val testSentences: Vector[(String, String)] = Vector(
+    ("rate rate rate", "spam"),
+    ("i am going to sleep", "ham"),
+    ("urgent discount", "spam"),
+    ("i will call you later", "ham"),
+    ("call our customer service", "spam")
+  )
 
-  println(
-    NaiveBayes.classify(
-      "i am going to sleep".split(" ").toVector,
+  testSentences.foreach((curr: (String, String)) => {
+    val actual = NaiveBayes.classify(
+      curr._1.split(" ").toVector,
       WordFrequency.wordFrequencyList(data),
       data
-    ))
+    )
+
+    println(s"actual: $actual, expected: ${curr._2}")
+  })
 }
 
 case class TrainInst(words: Vector[String], category: String)
@@ -74,7 +78,7 @@ object NaiveBayes {
     val isCatA = catA - catB
 
     val lossIfGoodMarkedAsSpam = 1
-    val lossIfSpamMarkedAsGood = 1
+    val lossIfSpamMarkedAsGood = 2
     val isCatB =
       math.log((lossIfSpamMarkedAsGood * pB) / (lossIfGoodMarkedAsSpam * pA))
 
