@@ -1,22 +1,24 @@
 package example
 import example.WordFrequency.{Category, WordFreq}
 import scalaz.Scalaz._
+import scalaz.Semigroup
 
 object SpamFilter extends App with DataParser {
   val data = Loader.loadData()
 
   println(
     NaiveBayes.classify(
-    "number rate number rate number rate call".split(" ").toVector,
+      "rate rate rate".split(" ").toVector,
       WordFrequency.wordFrequencyList(data),
       data
     ))
 
-  println(NaiveBayes.classify(
-    "i am going to sleep".split(" ").toVector,
-    WordFrequency.wordFrequencyList(data),
-    data
-  ))
+  println(
+    NaiveBayes.classify(
+      "i am going to sleep".split(" ").toVector,
+      WordFrequency.wordFrequencyList(data),
+      data
+    ))
 }
 
 case class TrainInst(words: Vector[String], category: String)
@@ -24,45 +26,60 @@ case class TrainInst(words: Vector[String], category: String)
 object NaiveBayes {
 
   def classify(words: Vector[String],
-               catsWithWordFreq: Map[Category, WordFreq],
+               catsWithWordFreq: Map[String, WordFreq],
                data: => Vector[TrainInst]): Category = {
-    val catProbs: Vector[(Category, Double, Int)] = catsWithWordFreq.map {
-      case ((category, wordFreq)) =>
-        val trainingExamplesOfCategory =
-          data.count(_.category == category)
 
-        val sameWords: WordFreq = wordFreq.filterKeys(c => words.contains(c))
-        val diffWords           = wordFreq.filterKeys(c => !words.contains(c))
+    val alpha = 0.3
 
-        val alpha                     = 1 / 3.toDouble
-        val smoothedTrainingN: Double = trainingExamplesOfCategory + alpha * 2
+    val sameWords: Iterable[WordFreq] =
+      catsWithWordFreq.filterKeys(c => words.contains(c)).values
+    val diffWords = catsWithWordFreq.filterKeys(c => !words.contains(c)).values
 
-        val sameWordsProb =
-          sameWords.values.map(y => (y + alpha) / smoothedTrainingN.toDouble)
-        val diffWordsProb = diffWords.values
-          .map(x =>
-            (math
-              .abs(smoothedTrainingN - x) + alpha) / smoothedTrainingN.toDouble)
-          .filterNot(_ == 0)
+    val categories: Vector[String] = data.map(_.category).distinct
 
-        (category,
-         (sameWordsProb ++ diffWordsProb).reduce(_ + math.log(_)),
-         trainingExamplesOfCategory)
+    val catAN = data.count(_.category == categories.head) + alpha * 2
+    val catBN = data.count(_.category == categories.last) + alpha * 2
 
-    }.toVector
+    def countWordsProb(words: Iterable[WordFreq],
+                       cats: Vector[Category],
+                       freqSum: (Double, Double, Double) => Double) = {
 
-    val catA = catProbs.head
-    val catB = catProbs.last
+      def smoothing(myCat: Category, catN: Double): Double = {
+        math.log(words.foldLeft(0.0)((prev, curr) => {
+          val freq: Double = if (curr.isDefinedAt(myCat)) {
+            freqSum(catN, curr(myCat), alpha)
+          } else alpha
+          prev + (freq / catN)
+        }))
+      }
 
-    val pA = catA._3.toDouble / data.size
-    val pB = catB._3.toDouble / data.size
+      val firstCatFreqs  = smoothing(cats.head, catAN)
+      val secondCatFreqs = smoothing(cats.last, catBN)
+      Map(cats.head -> firstCatFreqs, cats.last -> secondCatFreqs)
+    }
 
-    val isCatA = catA._2 - catB._2
+    val sameProbs: Map[String, Double] =
+      countWordsProb(sameWords, categories, (_, freq, alpha) => freq + alpha)
+    val diffProbs: Map[String, Double] = countWordsProb(
+      diffWords,
+      categories,
+      (catN, freq, alpha) => math.abs(catN - freq) + alpha)
 
-    val isCatB = math.log(((5 - 0) * pB) / ((1 - 0) * pA))
+    val catA = sameProbs(categories.head) + diffProbs(categories.head)
+    val catB = sameProbs(categories.last) + diffProbs(categories.last)
 
-    if (isCatA > isCatB) catA._1
-    else catB._1
+    val pA = (catAN - 2 * alpha) / data.size
+    val pB = (catBN - 2 * alpha) / data.size
+
+    val isCatA = catA - catB
+
+    val lossIfGoodMarkedAsSpam = 1
+    val lossIfSpamMarkedAsGood = 1
+    val isCatB =
+      math.log((lossIfSpamMarkedAsGood * pB) / (lossIfGoodMarkedAsSpam * pA))
+
+    if (isCatA > isCatB) categories.head
+    else categories.last
   }
 
 }
