@@ -11,7 +11,11 @@ object SpamFilter extends App with DataParser {
     ("i am going to sleep", "ham"),
     ("urgent discount", "spam"),
     ("i will call you later", "ham"),
-    ("call our customer service", "spam")
+    ("call our customer service", "spam"),
+    ("free monthly ringtone", "spam"),
+    ("call freephone", "spam"),
+    ("wish you guys great semester", "ham"),
+    ("win free vip ticket", "spam")
   )
 
   testSentences.foreach((curr: (String, String)) => {
@@ -124,6 +128,8 @@ trait DataParser {
 
   val cleanSet = ",.!?:\"#+".toSet
 
+  val wordsToIgnore = Vector("and", "of", "the").toSet
+
   def trimLine(line: String): TrainInst = {
 
     def buildInstance(cat: String): TrainInst = {
@@ -132,6 +138,7 @@ trait DataParser {
                   .trim
                   .split(" ")
                   .map(_.filterNot(cleanSet))
+                  .filterNot(wordsToIgnore)
                   .toVector,
                 cat)
     }
