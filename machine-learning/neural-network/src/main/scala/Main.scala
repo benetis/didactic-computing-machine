@@ -16,9 +16,9 @@ object Main extends App {
       Vector(0.0, 0),
       Vector(0.99, 1),
       Vector(0.99, 1),
+      Vector(0.2, 0),
       Vector(0.0, 0),
-      Vector(0.0, 0),
-      Vector(0.99, 1)
+      Vector(0.93, 1)
     ),
     iterations,
     nOutputClasses,
@@ -73,7 +73,7 @@ object NN {
     trainingInstance: Vector[Double]): (Vector[Layer], Vector[Double]) = {
 
     def propagate(NN: Vector[Layer], lastLayerOutputs: Vector[Double], nth: Int): Vector[Layer] = {
-      def layerActivation(layer: Layer) = (lastLayerInputs: Vector[Double]) => {
+      def layerActivation(layer: Layer, lastLayerInputs: Vector[Double]) = {
         layer.map((neuron: Neuron) => {
           val neuronLR =
             neuronActivation(neuron.weights, lastLayerInputs)
@@ -83,12 +83,13 @@ object NN {
       }
 
       if (nth == NN.length) NN else {
-        val updatedLayer: Layer = nth match {
-          case 0 => layerActivation(NN(nth))(trainingInstance)/* activate from training */
-          case _ => layerActivation(NN(nth))(lastLayerOutputs)
+
+        val updLayer: Layer = nth match {
+          case 0 => layerActivation(NN(nth), trainingInstance)/* activate from training */
+          case _ => layerActivation(NN(nth), lastLayerOutputs)
         }
 
-        propagate(NN.updated(nth, updatedLayer), NN(nth).map(_.output), nth + 1)
+        propagate(NN.updated(nth, updLayer), updLayer.map(_.output), nth + 1)
       }
     }
 
