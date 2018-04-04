@@ -82,7 +82,7 @@ object NN {
         })
       }
 
-      if(nth == NN.length) NN else {
+      if (nth == NN.length) NN else {
         val updatedLayer: Layer = nth match {
           case 0 => layerActivation(NN(nth))(trainingInstance)/* activate from training */
           case _ => layerActivation(NN(nth))(lastLayerOutputs)
@@ -139,28 +139,37 @@ object NN {
 
   }
 
-  def updateNetworkWeights(NN: Vector[Layer],
+  def updateNetworkWeights(neuralNet: Vector[Layer],
     trainingInstance: Vector[Double],
     learningRate: Double): Vector[Layer] = {
 
-    val firstLayer: Layer = NN.head.zipWithIndex.map {
-      case (neuron: Neuron, index) =>
-        val newW = neuron.weights(index) + learningRate * trainingInstance(
-          index)
-        neuron.copy(weights = neuron.weights.updated(index, newW))
-    }
+    def updateWeights(NN: Vector[Layer], nth: Int): Vector[Layer] = {
 
-    val hiddenLayers: Vector[Layer] = NN.drop(1).map { layer =>
-      layer.zipWithIndex.map {
-        case (neuron, index) =>
-          val newW = neuron
-            .weights(index) + learningRate * neuron.errorDelta * NN(
-            NN.length - 2)(index).output
-          neuron.copy(weights = neuron.weights.updated(index, newW))
+      if (nth == NN.length) NN
+      else {
+        val inputs = nth match {
+          case 0 => trainingInstance
+          case _ => neuralNet(nth - 1).map(_.output)
+        }
+
+        val updatedLayer = NN(nth).map { case (neuron: Neuron) =>
+          val inputUpdatedWeights = inputs.map(_ * neuron.errorDelta * learningRate)
+          val lastWeight = learningRate * neuron.errorDelta
+
+          val updatedWeights: Vector[Double] = neuron.weights zip inputUpdatedWeights map { case (a, b) => a + b }
+
+          val withLastWeight = updatedWeights
+            .updated(updatedWeights.length - 1, updatedWeights.length - 1 + lastWeight)
+
+          neuron.copy(weights = withLastWeight)
+        }
+
+        updateWeights(NN.updated(nth, updatedLayer), nth + 1)
       }
+
     }
 
-    firstLayer +: hiddenLayers
+    updateWeights(neuralNet, 0)
   }
 
   /** Neuron amount in layers as arguments **/
