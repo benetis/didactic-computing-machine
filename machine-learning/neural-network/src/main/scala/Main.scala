@@ -1,41 +1,43 @@
 // Some of the ideas taken from https://machinelearningmastery.com/implement-backpropagation-algorithm-scratch-python/
 // Other code implemented according to Gailius Raskinis Machine learning course
+
 object Main extends App {
   //
-  val nOutput      = 2 //0,1,2,3...
-  val nInput       = 2
-  val hiddenLayers = 1
+  val nOutputClasses = 2
+  val nFeatures = 1
+  val nHiddenLayers = 1
+  val hiddenLayerNeuronN = 5
   val learningRate = 0.5
-  val iterations   = 500
-  val myNN         = NN.initializeNN(nInput, nOutput, hiddenLayers)
+  val iterations = 500
+  val myNN = NN.initializeNN(nFeatures, nOutputClasses, nHiddenLayers, hiddenLayerNeuronN)
   val finishedNN = NN.trainNetwork(
     myNN,
     Vector(
-      Vector(0.0, 0.0, 0),
-      Vector(0.99, 0.89, 1),
-      Vector(0.99, 0.89, 1),
-      Vector(0.0, 0.0, 0),
-      Vector(0.0, 0.0, 0),
-      Vector(0.99, 0.89, 1)
+      Vector(0.0, 0),
+      Vector(0.99, 1),
+      Vector(0.99, 1),
+      Vector(0.0, 0),
+      Vector(0.0, 0),
+      Vector(0.99, 1)
     ),
     iterations,
-    nOutput,
+    nOutputClasses,
     learningRate
   )
 
   val testSet: Vector[Vector[Double]] = Vector(
-    Vector(0.0, 0.1, 0),
-    Vector(0.99, 0.8, 1)
+    Vector(0.0, 0),
+    Vector(0.99, 1)
   )
 
   println("Trained network: ")
-  finishedNN.foreach(layer => {
+  finishedNN.zipWithIndex.foreach { case (layer, i) =>
+    println(s"Layer[$i]")
     layer.foreach(neuron => {
       println(neuron.weights.foreach(w => print(s"$w ")))
     })
-
     println()
-  })
+  }
 
   println("Prediction start")
   testSet.foreach(trainingInstance => {
@@ -52,7 +54,7 @@ object NN {
   val r = new scala.util.Random(1)
 
   private def neuronActivation(weights: Vector[Double],
-                               inputs: Vector[Double]): Double = {
+    inputs: Vector[Double]): Double = {
     weights
       .dropRight(1)
       .zipWithIndex
@@ -66,21 +68,31 @@ object NN {
     1.0 / (1.0 + math.exp(-neuronWeightSum))
   }
 
-  private def sigmoidDerirative(x: Double): Double = {
-    x * (1.0 - x)
-  }
-
   def propogateForward(
-      NN: Vector[Layer],
-      trainingInstance: Vector[Double]): (Vector[Layer], Vector[Double]) = {
-    val updatedNN = NN.map((layer: Layer) => {
-      layer.map((neuron: Neuron) => {
-        val neuronLR =
-          neuronActivation(neuron.weights, trainingInstance)
-        val neuronOutput = sigmoid(neuronLR)
-        neuron.copy(output = neuronOutput)
-      })
-    })
+    neuralNet: Vector[Layer],
+    trainingInstance: Vector[Double]): (Vector[Layer], Vector[Double]) = {
+
+    def propagate(NN: Vector[Layer], lastLayerOutputs: Vector[Double], nth: Int): Vector[Layer] = {
+      def layerActivation(layer: Layer) = (lastLayerInputs: Vector[Double]) => {
+        layer.map((neuron: Neuron) => {
+          val neuronLR =
+            neuronActivation(neuron.weights, lastLayerInputs)
+          val neuronOutput = sigmoid(neuronLR)
+          neuron.copy(output = neuronOutput)
+        })
+      }
+
+      if(nth == NN.length) NN else {
+        val updatedLayer: Layer = nth match {
+          case 0 => layerActivation(NN(nth))(trainingInstance)/* activate from training */
+          case _ => layerActivation(NN(nth))(lastLayerOutputs)
+        }
+
+        propagate(NN.updated(nth, updatedLayer), NN(nth).map(_.output), nth + 1)
+      }
+    }
+
+    val updatedNN = propagate(neuralNet, trainingInstance, 0)
 
     (updatedNN, updatedNN.last.map(n => n.output))
   }
@@ -128,8 +140,8 @@ object NN {
   }
 
   def updateNetworkWeights(NN: Vector[Layer],
-                           trainingInstance: Vector[Double],
-                           learningRate: Double): Vector[Layer] = {
+    trainingInstance: Vector[Double],
+    learningRate: Double): Vector[Layer] = {
 
     val firstLayer: Layer = NN.head.zipWithIndex.map {
       case (neuron: Neuron, index) =>
@@ -152,7 +164,11 @@ object NN {
   }
 
   /** Neuron amount in layers as arguments **/
-  def initializeNN(nInputs: Int, nOutputs: Int, nHidden: Int): Vector[Layer] = {
+  def initializeNN(
+    nFeatures: Int,
+    nOutputClasses: Int,
+    nHiddenLayer: Int,
+    hiddenLayerNeuronN: Int): Vector[Layer] = {
 
     def layer(neuronAmount: Int, prevLayerNeuronAmount: Int): Layer = {
 //      val biasInput = 2
@@ -164,17 +180,24 @@ object NN {
       }
     }
 
-    val hiddenLayers: Vector[Layer] = (0 to nHidden).map(_ => layer(nInputs, nInputs * 2)).toVector
-    val outputLayer: Layer = layer(nInputs, nInputs * 2)
+    val inputLayer: Layer = layer(nFeatures, nFeatures)
 
-    hiddenLayers :+ outputLayer
+    val hiddenLayers: Vector[Layer] = (1 to nHiddenLayer)
+      .map {
+        case 1 => layer(hiddenLayerNeuronN, nFeatures)
+        case _ => layer(hiddenLayerNeuronN, hiddenLayerNeuronN)
+      }.toVector
+
+    val outputLayer: Layer = layer(nOutputClasses, hiddenLayerNeuronN)
+
+    inputLayer +: hiddenLayers :+ outputLayer
   }
 
   def trainNetwork(NN: Vector[Layer],
-                   trainingSet: Vector[Vector[Double]],
-                   iter: Int,
-                   nOutput: Int,
-                   learningRate: Double): Vector[Layer] = {
+    trainingSet: Vector[Vector[Double]],
+    iter: Int,
+    nOutput: Int,
+    learningRate: Double): Vector[Layer] = {
     if (iter < 0) NN
     else {
 
@@ -184,7 +207,7 @@ object NN {
         val (forward, outputs) = propogateForward(prev, curr._1)
 
         val expectedEmpty: Vector[Int] = Vector.fill(nOutput)(0)
-        val expected                   = expectedEmpty.updated(curr._1.last.toInt, 1)
+        val expected = expectedEmpty.updated(curr._1.last.toInt, 1)
 
         sumError += expected.zipWithIndex.foldLeft(0.0)((prev, curr) => {
           prev + Math.pow(curr._1 - outputs(curr._2), 2)
