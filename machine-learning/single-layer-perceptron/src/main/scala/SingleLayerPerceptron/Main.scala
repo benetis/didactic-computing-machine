@@ -13,7 +13,7 @@ object Main extends App {
     val splitLines: Iterator[Array[String]] = src.map(_.split(","))
 
     def lineToDoubles(line: Array[String]): Vector[Double] = {
-      val className: Double = if(line.last == "R") 1 else 0
+      val className: Double = if (line.last == "R") 1 else 0
       val features = line.dropRight(1).map(_.toDouble)
       features.toVector :+ className
     }
@@ -26,15 +26,33 @@ object Main extends App {
   val trainingData = allData.dropRight((allData.length * 0.2).toInt)
   val testData = allData.drop((allData.length * 0.8).toInt)
 
-  val weights = SingleLayerPerceptron.trainNetwork(trainingData, 0.1, 500)
-  val predictions = testData.map(r => SingleLayerPerceptron.predict(r, weights) -> r.last)
+  def predict(learningRate: Double, iterations: Int): Unit = {
+    val weights = SingleLayerPerceptron.trainNetwork(trainingData, learningRate, iterations)
+    val predictions = testData.map(r => SingleLayerPerceptron.predict(r, weights) -> r.last)
 
-  val howManyPredictedCorrect: Double = predictions.map(c => c._1 == c._2.toInt).count(_ == true)
+    val howManyPredictedCorrect: Double = predictions.map(c => c._1 == c._2.toInt).count(_ == true)
 
-  val meanAccuracy: Double = howManyPredictedCorrect / predictions.length
+    val meanAccuracy: Double = howManyPredictedCorrect / predictions.length
 
-  println(weights)
-  println(meanAccuracy * 100)
+//    println(weights)
+//    println(meanAccuracy * 100)
+    println(meanAccuracy * 100)
+  }
+
+  predict(0.1, 10)
+  predict(0.5, 10)
+  predict(1, 10)
+
+  predict(0.1, 50)
+  predict(0.5, 50)
+  predict(1, 50)
+
+  predict(0.1, 500)
+  predict(0.5, 500)
+  predict(1, 500)
+
+  predict(0.1, 5000)
+  predict(0.01, 10000)
 
 }
 
