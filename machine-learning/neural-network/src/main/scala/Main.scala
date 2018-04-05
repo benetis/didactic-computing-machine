@@ -7,18 +7,16 @@ object Main extends App {
   val nFeatures = 2
   val nHiddenLayers = 1
   val hiddenLayerNeuronN = 5
-  val learningRate = 2
-  val iterations = 500
+  val learningRate = 0.5
+  val iterations = 100
   val myNN = NN.initializeNN(nFeatures, nOutputClasses, nHiddenLayers, hiddenLayerNeuronN)
   val finishedNN = NN.trainNetwork(
     myNN,
     Vector(
-      Vector(0.12, 1.5, 0),
-      Vector(1.99, 1.5, 1),
-      Vector(0.99, 1.5, 1),
-      Vector(0.2, 1.5, 0),
-      Vector(0.0, 1.5, 0),
-      Vector(0.93, 1.5, 1)
+      Vector(0.91, 0.92, 1),
+      Vector(0.93, 0.94, 1),
+      Vector(0.01, 0.02, 0),
+      Vector(0.03, 0.04, 0)
     ),
     iterations,
     nOutputClasses,
@@ -26,8 +24,8 @@ object Main extends App {
   )
 
   val testSet: Vector[Vector[Double]] = Vector(
-    Vector(0.0, 0),
-    Vector(0.99, 1)
+    Vector(0.93, 0.94, 1),
+    Vector(0.01, 0.02, 0)
   )
 
   println("Trained network: ")
@@ -100,7 +98,7 @@ object NN {
 
   def propogateBackward(neuralNet: Vector[Layer], expected: Vector[Int]): Vector[Layer] = {
 
-    def transfer(output: Double) = output * (1.0 - output)
+    def sigmoidDerivative(output: Double): Double = output * (1.0 - output)
 
     def backward(NN: Vector[Layer], nth: Int): Vector[Layer] = {
 
@@ -123,10 +121,10 @@ object NN {
         val updatedDeltas: Vector[Double] = currentLayer.zipWithIndex.map { case (_, i: Int) =>
           val neuron = currentLayer(i)
 
-          errors(i) * transfer(neuron.output)
+          errors(i) * sigmoidDerivative(neuron.output)
         }
 
-        val updatedLayer = NN(nth).zip(updatedDeltas).map { case (neuron: Neuron, errDelt: Double) => {
+        val updatedLayer = currentLayer.zip(updatedDeltas).map { case (neuron: Neuron, errDelt: Double) => {
           neuron.copy(errorDelta = errDelt)
         }
         }
@@ -195,8 +193,8 @@ object NN {
 
     val hiddenLayers: Vector[Layer] = (1 to nHiddenLayer)
       .map {
-        case 1 => layer(hiddenLayerNeuronN, nFeatures)
-        case _ => layer(hiddenLayerNeuronN, hiddenLayerNeuronN)
+        case 1 => layer(hiddenLayerNeuronN, nFeatures + 1)
+        case _ => layer(hiddenLayerNeuronN, hiddenLayerNeuronN + 1)
       }.toVector
 
     val outputLayer: Layer = layer(nOutputClasses, hiddenLayerNeuronN)
@@ -222,7 +220,7 @@ object NN {
           val expected = expectedEmpty.updated(trainingRow.last.toInt, 1)
 
           sumError += expected.zipWithIndex.foldLeft(0.0)((prev, curr) => {
-            prev + Math.pow(curr._1 - outputs(curr._2), 2)
+            prev + Math.pow(expected(curr._2) - outputs(curr._2), 2)
           })
 
           val backward = propogateBackward(forwardNetwork, expected)
