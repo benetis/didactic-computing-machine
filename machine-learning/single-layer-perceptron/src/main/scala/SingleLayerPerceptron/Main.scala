@@ -21,7 +21,21 @@ object Main extends App {
     splitLines.map(lineToDoubles).toVector
   }
 
-  println(readData())
+  val allData = readData()
+
+  val trainingData = allData.dropRight((allData.length * 0.2).toInt)
+  val testData = allData.drop((allData.length * 0.8).toInt)
+
+  val weights = SingleLayerPerceptron.trainNetwork(trainingData, 0.1, 500)
+  val predictions = testData.map(r => SingleLayerPerceptron.predict(r, weights) -> r.last)
+
+  val howManyPredictedCorrect: Double = predictions.map(c => c._1 == c._2.toInt).count(_ == true)
+
+  val meanAccuracy: Double = howManyPredictedCorrect / predictions.length
+
+  println(weights)
+  println(meanAccuracy * 100)
+
 }
 
 object SingleLayerPerceptron {
@@ -59,7 +73,7 @@ object SingleLayerPerceptron {
             val updatedWeights = biasWeight +: row.drop(1).zipWithIndex.map { case (_, i) =>
               weights(i + 1) + learningRate * error * row(i)
             }
-            println(s"iteration: $nth, error: $sumError")
+//            println(s"iteration: $nth, error: $sumError")
 
             trainFromSet(updatedWeights, rows.tail)
           }
