@@ -6,7 +6,7 @@ class Test extends FlatSpec with Matchers {
 
 
   /* Two inputs + bias */
-  val weights = Vector(-0.2, 0.4, 0.4)
+  val weights = Vector(-0.1, 0.09000000000000001, 0.07)
 
   "Predict" should "return class 0 with this row and weights" in {
 
@@ -24,5 +24,22 @@ class Test extends FlatSpec with Matchers {
 
     SingleLayerPerceptron.predict(row3, weights) shouldEqual 1
     SingleLayerPerceptron.predict(row4, weights) shouldEqual 1
+  }
+
+  "Train network" should "output weights given dataset" in {
+
+    val rows = Vector(
+      Vector(0.0, 0.1, 0),
+      Vector(0.2, 0.1, 0),
+      Vector(0.9, 0.9, 1),
+      Vector(0.7, 0.8, 1)
+    )
+
+    val learningRate = 0.1
+    val iterations = 500
+
+    SingleLayerPerceptron.trainNetwork(
+      rows, learningRate, iterations) shouldEqual Vector(-0.1, 0.09000000000000001, 0.07)
+
   }
 }
