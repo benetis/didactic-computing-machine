@@ -4,21 +4,21 @@
 object Main extends App {
   //
   val nOutputClasses = 2
-  val nFeatures = 1
+  val nFeatures = 2
   val nHiddenLayers = 1
   val hiddenLayerNeuronN = 5
-  val learningRate = 0.5
+  val learningRate = 2
   val iterations = 500
   val myNN = NN.initializeNN(nFeatures, nOutputClasses, nHiddenLayers, hiddenLayerNeuronN)
   val finishedNN = NN.trainNetwork(
     myNN,
     Vector(
-      Vector(0.0, 0),
-      Vector(0.99, 1),
-      Vector(0.99, 1),
-      Vector(0.2, 0),
-      Vector(0.0, 0),
-      Vector(0.93, 1)
+      Vector(0.12, 1.5, 0),
+      Vector(1.99, 1.5, 1),
+      Vector(0.99, 1.5, 1),
+      Vector(0.2, 1.5, 0),
+      Vector(0.0, 1.5, 0),
+      Vector(0.93, 1.5, 1)
     ),
     iterations,
     nOutputClasses,
@@ -98,45 +98,45 @@ object NN {
     (updatedNN, updatedNN.last.map(n => n.output))
   }
 
-  def propogateBackward(NN: Vector[Layer], T: Vector[Int]): Vector[Layer] = {
-    val lastLayerWithSigma: Layer = NN.last.zip(T).map {
-      case (neuron: Neuron, expectedNeuronOutput: Int) =>
-        //sigma_last_k = y_last_k * (1 - y_last_k)(T_k - y_last_k)
-        neuron
-          .copy(
-            errorDelta = neuron.output * (1 - neuron.output) * (expectedNeuronOutput - neuron.output))
-    }
+  def propogateBackward(neuralNet: Vector[Layer], expected: Vector[Int]): Vector[Layer] = {
 
-    def sumOfLayerErrors(layerIndex: Int, neuronIndex: Int): Double = {
+    def transfer(output: Double) = output * (1.0 - output)
 
-      def reverseLayerIndex(i: Int) = math.abs(i - NN.length + 1)
+    def backward(NN: Vector[Layer], nth: Int): Vector[Layer] = {
 
-      NN(reverseLayerIndex(layerIndex)).foldLeft(0.0)((prev, curr) => {
-        prev + curr.errorDelta * curr.weights(neuronIndex)
-      })
-    }
+      if(nth == 0) NN else {
+        val currentLayer = NN(nth)
 
-    NN.updated(NN.length - 1, lastLayerWithSigma)
-      .reverse
-      .zipWithIndex
-      .map {
-        case (layer: Layer, index: Int) =>
-          if (index == 0) layer
-          else {
-
-            val previousLayer = index - 1 //Because we iterate backwards
-
-            layer.zipWithIndex.map {
-              case (neuron, neuronIndex) =>
-                neuron.copy(
-                  errorDelta =
-                    neuron.output * (1 - neuron.output) * sumOfLayerErrors(
-                      previousLayer,
-                      neuronIndex))
-            }
+        val errors: Vector[Double] = if(nth != NN.length - 1) {/* Last element in reversed layers list */
+          currentLayer.zipWithIndex.map { case (_, i: Int) =>
+            NN(nth + 1).foldLeft(0.0)((prev, curr) => {
+              prev + curr.weights(i) * curr.errorDelta
+            })
           }
+        } else {
+          currentLayer.zipWithIndex.map { case(_, i: Int) =>
+            val neuron = currentLayer(i)
+            expected(i) - neuron.output
+          }
+        }
+
+        val updatedDeltas: Vector[Double] = currentLayer.zipWithIndex.map { case (_, i: Int) =>
+          val neuron = currentLayer(i)
+
+          errors(i) * transfer(neuron.output)
+        }
+
+        val updatedLayer = NN(nth).zip(updatedDeltas).map { case(neuron: Neuron, errDelt: Double) => {
+          neuron.copy(errorDelta = errDelt)
+        }}
+
+        val updatedNN = NN.updated(nth, updatedLayer)
+
+        backward(updatedNN, nth - 1)
       }
-      .reverse
+     }
+
+    backward(neuralNet, neuralNet.length - 1)
 
   }
 
