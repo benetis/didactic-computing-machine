@@ -42,6 +42,7 @@ object SingleLayerPerceptron {
             val updatedWeights = biasWeight +: row.drop(1).zipWithIndex.map { case(_, i) =>
               weights(i + 1) + learningRate * error * row(i)
             }
+            println(s"iteration: $nth, error: $sumError")
 
             trainFromSet(updatedWeights, rows.tail)
           }
