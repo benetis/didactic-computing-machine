@@ -68,7 +68,7 @@ object NN {
     1.0 / (1.0 + math.exp(-neuronWeightSum))
   }
 
-  def propogateForward(
+  def propagateForward(
     neuralNet: Vector[Layer],
     trainingInstance: Vector[Double]): (Vector[Layer], Vector[Double]) = {
 
@@ -104,17 +104,17 @@ object NN {
 
     def backward(NN: Vector[Layer], nth: Int): Vector[Layer] = {
 
-      if(nth == 0) NN else {
+      if (nth == 0) NN else {
         val currentLayer = NN(nth)
 
-        val errors: Vector[Double] = if(nth != NN.length - 1) {/* Last element in reversed layers list */
+        val errors: Vector[Double] = if (nth != NN.length - 1) {/* Last element in reversed layers list */
           currentLayer.zipWithIndex.map { case (_, i: Int) =>
             NN(nth + 1).foldLeft(0.0)((prev, curr) => {
               prev + curr.weights(i) * curr.errorDelta
             })
           }
         } else {
-          currentLayer.zipWithIndex.map { case(_, i: Int) =>
+          currentLayer.zipWithIndex.map { case (_, i: Int) =>
             val neuron = currentLayer(i)
             expected(i) - neuron.output
           }
@@ -126,15 +126,16 @@ object NN {
           errors(i) * transfer(neuron.output)
         }
 
-        val updatedLayer = NN(nth).zip(updatedDeltas).map { case(neuron: Neuron, errDelt: Double) => {
+        val updatedLayer = NN(nth).zip(updatedDeltas).map { case (neuron: Neuron, errDelt: Double) => {
           neuron.copy(errorDelta = errDelt)
-        }}
+        }
+        }
 
         val updatedNN = NN.updated(nth, updatedLayer)
 
         backward(updatedNN, nth - 1)
       }
-     }
+    }
 
     backward(neuralNet, neuralNet.length - 1)
 
@@ -203,29 +204,37 @@ object NN {
     inputLayer +: hiddenLayers :+ outputLayer
   }
 
-  def trainNetwork(NN: Vector[Layer],
+  def trainNetwork(neuralNet: Vector[Layer],
     trainingSet: Vector[Vector[Double]],
     iter: Int,
     nOutput: Int,
     learningRate: Double): Vector[Layer] = {
-    if (iter < 0) NN
+    if (iter < 0) neuralNet
     else {
 
       var sumError = 0.0
 
-      val nextInputNN = trainingSet.zipWithIndex.foldLeft(NN)((prev, curr) => {
-        val (forward, outputs) = propogateForward(prev, curr._1)
+      def trainRow(NN: Vector[Layer], setToTrainOn: Vector[Vector[Double]]): Vector[Layer] = {
+        if (setToTrainOn.isEmpty) NN else {
+          val trainingRow = setToTrainOn.head
+          val (forwardNetwork, outputs) = propagateForward(NN, trainingRow)
+          val expectedEmpty: Vector[Int] = Vector.fill(nOutput)(0)
+          val expected = expectedEmpty.updated(trainingRow.last.toInt, 1)
 
-        val expectedEmpty: Vector[Int] = Vector.fill(nOutput)(0)
-        val expected = expectedEmpty.updated(curr._1.last.toInt, 1)
+          sumError += expected.zipWithIndex.foldLeft(0.0)((prev, curr) => {
+            prev + Math.pow(curr._1 - outputs(curr._2), 2)
+          })
 
-        sumError += expected.zipWithIndex.foldLeft(0.0)((prev, curr) => {
-          prev + Math.pow(curr._1 - outputs(curr._2), 2)
-        })
+          val backward = propogateBackward(forwardNetwork, expected)
 
-        val backward = propogateBackward(forward, expected)
-        updateNetworkWeights(backward, curr._1, learningRate)
-      })
+          val updatedNN = updateNetworkWeights(backward, trainingRow, learningRate)
+
+          trainRow(updatedNN, setToTrainOn.tail)
+        }
+      }
+
+      val nextInputNN = trainRow(neuralNet, trainingSet)
+
       println(s"iteration: $iter, error: $sumError")
 
       trainNetwork(nextInputNN, trainingSet, iter - 1, nOutput, learningRate)
@@ -233,7 +242,7 @@ object NN {
   }
 
   def prediction(NN: Vector[Layer], feature: Vector[Double]) = {
-    val (_, output) = propogateForward(NN, feature)
+    val (_, output) = propagateForward(NN, feature)
     println(s"output neurons: $output")
     output.indexOf(output.max)
   }
