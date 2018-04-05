@@ -3,8 +3,25 @@
 
 package SingleLayerPerceptron
 
+import scala.io.Source
+
 object Main extends App {
-  def main() = {}
+
+  def readData(): Vector[Vector[Double]] = {
+    val src: Iterator[String] = Source.fromFile("src/data.txt").getLines
+
+    val splitLines: Iterator[Array[String]] = src.map(_.split(","))
+
+    def lineToDoubles(line: Array[String]): Vector[Double] = {
+      val className: Double = if(line.last == "R") 1 else 0
+      val features = line.dropRight(1).map(_.toDouble)
+      features.toVector :+ className
+    }
+
+    splitLines.map(lineToDoubles).toVector
+  }
+
+  println(readData())
 }
 
 object SingleLayerPerceptron {
@@ -39,7 +56,7 @@ object SingleLayerPerceptron {
             sumError += Math.pow(error, 2)
 
             val biasWeight: Double = weights(0) + learningRate * error
-            val updatedWeights = biasWeight +: row.drop(1).zipWithIndex.map { case(_, i) =>
+            val updatedWeights = biasWeight +: row.drop(1).zipWithIndex.map { case (_, i) =>
               weights(i + 1) + learningRate * error * row(i)
             }
             println(s"iteration: $nth, error: $sumError")
