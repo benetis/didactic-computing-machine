@@ -35,7 +35,7 @@ void initializeSemaphores(sem_t *lock, sem_t *forks, int nForks);
 void runAllThreads(pthread_t *threads, sem_t *forks, sem_t *lock, int nP);
 
 int main(int argc, char *args[]) {
-    int nP = 5;
+    int nP = 500;
 
     sem_t lock;
     sem_t forks[nP];
@@ -108,6 +108,6 @@ void initializeSemaphores(sem_t *lock, sem_t *forks, int nForks) {
         sem_init(&forks[i], 0, 1);
     }
 
-    /* Locking forks, but minus one philosopher to avoid deadlock */
+    /* Locking forks, but minus one fork to avoid deadlock */
     sem_init(lock, 0, nForks - 1);
 }
