@@ -24,23 +24,13 @@ object GUIMain extends JFXApp {
     Point(2, 1),
     Point(4, 1),
     Point(4, 2),
-    Point(3, 2)
+    Point(3, 2),
+    Point(5, 1)
   )
 
   val runtime: Runtime[zio.ZEnv] = Runtime.default
 
   val Button = new Button("Start")
-
-  stage = new PrimaryStage {
-    title = "Game of life"
-//    scene = View.universe
-    scene = new Scene(500, 500) {
-      fill = Black
-      content = new VBox {
-        children = Seq(View.cellGroup)
-      }
-    }
-  }
 
   def renderState(ref: Ref[LifeState]): ZIO[Clock, Nothing, Unit] = {
 
@@ -54,9 +44,7 @@ object GUIMain extends JFXApp {
 
     println("WTF")
 
-    render *> UIO(Platform.runLater(new Runnable {
-      override def run(): Unit = Thread.sleep(1000)
-    })) *> renderState(ref)
+    render *> ZIO.sleep(Duration(1, TimeUnit.SECONDS)) *> renderState(ref)
   }
 
   val update: ZIO[Clock with Console, Nothing, Unit] = for {
@@ -65,6 +53,20 @@ object GUIMain extends JFXApp {
     _ <- renderState(ref)
   } yield ()
 
-  runtime.unsafeRun(update)
+  val primaryStage: PrimaryStage = new PrimaryStage {
+    title = "Game of life"
+    scene = new Scene(500, 500) {
+      fill = Black
+      content = new VBox {
+        children = Seq(View.cellGroup)
+      }
+    }
+  }
+
+  primaryStage.setOnShown(e => {
+    runtime.unsafeRunSync(update)
+  })
+
+  stage = primaryStage
 
 }
