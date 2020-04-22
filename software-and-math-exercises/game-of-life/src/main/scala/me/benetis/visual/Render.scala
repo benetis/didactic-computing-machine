@@ -1,49 +1,83 @@
 package me.benetis.visual
 
+import java.util.concurrent.TimeUnit
 import me.benetis.initial_states.RandomState
 import me.benetis.{GameOfLifeRules, LifeState, Point}
 import org.scalajs.dom
 import org.scalajs.dom.{CanvasRenderingContext2D, document, html}
 import scala.util.Random
 import zio.clock.Clock
-import zio.{IO, Ref, Schedule, Task, UIO, ZIO}
+import zio.{IO, Queue, Ref, Schedule, Task, UIO, ZIO}
 import zio.duration._
 
 object Render {
   case class RenderConfig(scale: Int,
                           blobSize: Int,
                           browserWidth: Double,
-                          browserHeight: Double)
+                          browserHeight: Double,
+                          speed: Duration)
 
   val config =
-    RenderConfig(10, 20, dom.window.innerWidth, dom.window.innerHeight)
+    RenderConfig(
+      10,
+      10,
+      dom.window.innerWidth,
+      dom.window.innerHeight,
+      1.second
+    )
 
   val rng = new Random()
 
   val program: ZIO[Clock, Throwable, Unit] = {
     for {
       renderer <- prepareScreen(config)
-      refState <- Ref.make(RandomState.randomCenter(config))
-      _ <- (render(renderer, config, refState) *> updateState(refState) *> UIO(
-        dom.console.log("tick")
-      )).repeat(Schedule.fixed(1.second)).forever
+      stateQueue <- Queue.bounded[LifeState](10)
+      f1 <- generateState(RandomState.randomCenter(config), stateQueue).fork
+      f2 <- render(renderer, config, stateQueue).fork
+
+      _ <- reportQueueSize(stateQueue).repeat(Schedule.fixed(1.second)).fork
+
+      _ <- f1.join
+      _ <- f2.join
+    } yield ()
+  }
+
+  private def reportQueueSize(queue: Queue[LifeState]) = {
+    for {
+      size <- queue.size
+      _ <- UIO(dom.console.log(s"queue size: $size"))
     } yield ()
   }
 
   private def render(renderer: CanvasRenderingContext2D,
                      config: RenderConfig,
-                     ref: Ref[LifeState]): ZIO[Any, Nothing, Unit] = {
-    for {
-      _ <- clearCanvas(renderer, config)
-      state <- ref.get
-      _ = state.foreach(p => renderPoint(renderer, config, p))
-    } yield ()
+                     queue: Queue[LifeState]): ZIO[Clock, Nothing, Unit] = {
+
+    def loop(): ZIO[Clock, Nothing, Unit] =
+      for {
+        state <- queue.poll
+        next <- state match {
+          case Some(value) =>
+            clearCanvas(renderer, config) *>
+              UIO(value.foreach(p => renderPoint(renderer, config, p))) *> ZIO
+              .sleep(config.speed) *> loop()
+          case None => loop()
+        }
+      } yield next
+
+    loop()
   }
 
-  private def updateState(ref: Ref[LifeState]): ZIO[Any, Nothing, Unit] =
-    for {
-      _ <- ref.update(state => GameOfLifeRules.nextState(state))
-    } yield ()
+  private def generateState(
+    initialState: LifeState,
+    queue: Queue[LifeState]
+  ): ZIO[Any, Nothing, Unit] = {
+
+    def loop(state: LifeState): UIO[Unit] =
+      queue.offer(state) *> loop(GameOfLifeRules.nextState(state))
+
+    loop(initialState)
+  }
 
   private def clearCanvas(renderer: CanvasRenderingContext2D,
                           config: RenderConfig): UIO[Unit] = UIO {
