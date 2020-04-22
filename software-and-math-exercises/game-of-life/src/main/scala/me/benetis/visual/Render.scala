@@ -19,11 +19,11 @@ object Render {
 
   val config =
     RenderConfig(
-      scale = 10,
-      blobSize = 20,
-      browserWidth = dom.window.innerWidth,
-      browserHeight = dom.window.innerHeight,
-      speed = 100.millis
+      10,
+      10,
+      dom.window.innerWidth,
+      dom.window.innerHeight,
+      1.second
     )
 
   val rng = new Random()
@@ -35,7 +35,7 @@ object Render {
       f1 <- generateState(RandomState.randomCenter(config), stateQueue).fork
       f2 <- render(renderer, config, stateQueue).fork
 
-      _ <- reportQueueSize(stateQueue).repeat(Schedule.fixed(config.speed)).fork
+      _ <- reportQueueSize(stateQueue).repeat(Schedule.fixed(1.second)).fork
 
       _ <- f1.join
       _ <- f2.join
@@ -58,12 +58,9 @@ object Render {
         state <- queue.poll
         next <- state match {
           case Some(value) =>
-            for {
-              _ <- clearCanvas(renderer, config)
-              _ <- UIO(value.foreach(p => renderPoint(renderer, config, p))).fork
-              _ <- ZIO.sleep(config.speed)
-              _ <- loop()
-            } yield ()
+            clearCanvas(renderer, config) *>
+              UIO(value.foreach(p => renderPoint(renderer, config, p))) *> ZIO
+              .sleep(config.speed) *> loop()
           case None => loop()
         }
       } yield next
