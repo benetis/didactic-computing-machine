@@ -17,11 +17,11 @@ object Render {
   val canvas: html.Canvas =
     document.querySelector("#canvas").asInstanceOf[html.Canvas]
 
-  val browserWidth: Int = canvas.parentElement.clientWidth
-  val browserHeight: Int = canvas.parentElement.clientHeight
+  val browserWidth = dom.window.innerWidth
+  val browserHeight = dom.window.innerHeight
 
-  canvas.width = browserWidth
-  canvas.height = browserHeight
+  canvas.width = browserWidth.toInt
+  canvas.height = browserHeight.toInt
 
   val program: ZIO[Clock, Throwable, Unit] = {
 
