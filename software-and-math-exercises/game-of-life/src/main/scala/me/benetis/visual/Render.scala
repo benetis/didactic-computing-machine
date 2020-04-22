@@ -16,7 +16,7 @@ object Render {
                           browserHeight: Double)
 
   val config =
-    RenderConfig(10, 20, dom.window.innerWidth, dom.window.innerHeight)
+    RenderConfig(15, 10, dom.window.innerWidth, dom.window.innerHeight)
 
   val rng = new Random()
 
