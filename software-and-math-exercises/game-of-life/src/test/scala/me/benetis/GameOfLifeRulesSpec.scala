@@ -15,7 +15,7 @@ import zio.test.environment._
   */
 object GameOfLifeRulesSpec extends DefaultRunnableSpec {
   def spec = suite("Game of life rules spec")(
-    testM("cell should die if it has no neighbours") {
+    test("cell should die if it has no neighbours") {
       /*
       +---------+
       |---------|
@@ -25,11 +25,9 @@ object GameOfLifeRulesSpec extends DefaultRunnableSpec {
        */
       val state = Set(Point(1, 1))
 
-      for {
-        nextState: LifeState <- GameOfLifeRules.nextState(state)
-      } yield assert(nextState)(equalTo(Set.empty[Point]))
+      assert(GameOfLifeRules.nextState(state))(equalTo(Set.empty[Point]))
     },
-    testM("cell should die if it has one neighbour") {
+    test("cell should die if it has one neighbour") {
       /*
       +---------+
       |---------|
@@ -39,11 +37,9 @@ object GameOfLifeRulesSpec extends DefaultRunnableSpec {
        */
       val state = Set(Point(1, 1), Point(2, 1))
 
-      for {
-        nextState: LifeState <- GameOfLifeRules.nextState(state)
-      } yield assert(nextState)(equalTo(Set.empty[Point]))
+      assert(GameOfLifeRules.nextState(state))(equalTo(Set.empty[Point]))
     },
-    testM("cell with two neighbours should live on") {
+    test("cell with two neighbours should live on") {
       /*
       +---------+
       |---------|
@@ -53,11 +49,9 @@ object GameOfLifeRulesSpec extends DefaultRunnableSpec {
        */
       val state = Set(Point(1, 1), Point(2, 1), Point(1, 0), Point(2, 0))
 
-      for {
-        nextState: LifeState <- GameOfLifeRules.nextState(state)
-      } yield assert(nextState)(equalTo(state))
+      assert(GameOfLifeRules.nextState(state))(equalTo(state))
     },
-    testM("cell with three neighbours should live on") {
+    test("cell with three neighbours should live on") {
       /*
       +---------+
       |---------|
@@ -76,11 +70,9 @@ object GameOfLifeRulesSpec extends DefaultRunnableSpec {
         Point(1, 2)
       )
 
-      for {
-        nextState: LifeState <- GameOfLifeRules.nextState(state)
-      } yield assert(nextState)(equalTo(expectedState))
+      assert(GameOfLifeRules.nextState(state))(equalTo(expectedState))
     },
-    testM("cell with 4 neighbours should die") {
+    test("cell with 4 neighbours should die") {
       /* Input
       +---------+
       |---------|
@@ -108,11 +100,9 @@ object GameOfLifeRulesSpec extends DefaultRunnableSpec {
         Point(1, 2)
       )
 
-      for {
-        nextState: LifeState <- GameOfLifeRules.nextState(state)
-      } yield assert(nextState)(equalTo(expected))
+      assert(GameOfLifeRules.nextState(state))(equalTo(expected))
     },
-    testM("dead cell with 3 live neighbours becomes a live cell") {
+    test("dead cell with 3 live neighbours becomes a live cell") {
       /* Input
       +---------+
       |---------|
@@ -130,9 +120,7 @@ object GameOfLifeRulesSpec extends DefaultRunnableSpec {
       val state = Set(Point(0, 1), Point(1, 2), Point(2, 1))
       val expected = Set(Point(1, 2), Point(1, 1))
 
-      for {
-        nextState: LifeState <- GameOfLifeRules.nextState(state)
-      } yield assert(nextState)(equalTo(expected))
+      assert(GameOfLifeRules.nextState(state))(equalTo(expected))
     },
   )
 }

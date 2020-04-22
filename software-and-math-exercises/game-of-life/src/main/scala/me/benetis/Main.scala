@@ -1,4 +1,5 @@
 package me.benetis
+import me.benetis.visual.Render
 import org.scalajs.dom
 import org.scalajs.dom.document
 import zio._

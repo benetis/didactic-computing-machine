@@ -4,7 +4,7 @@ import zio.UIO
 
 object GameOfLifeRules {
 
-  def nextState(state: LifeState): UIO[LifeState] = UIO {
+  def nextState(state: LifeState): LifeState = {
 
     val selection = state
       .map(point => {
