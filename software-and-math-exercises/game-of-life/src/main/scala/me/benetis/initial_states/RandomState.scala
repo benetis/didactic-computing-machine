@@ -2,6 +2,7 @@ package me.benetis.initial_states
 
 import me.benetis.visual.Render.RenderConfig
 import me.benetis.{LifeState, Point}
+import org.scalajs.dom
 
 object RandomState {
 
@@ -25,7 +26,7 @@ object RandomState {
   }
 
   private def randomState(rows: Range, columns: Range): LifeState = {
-    rows.flatMap(i => columns.map(j => Point(i, j))).toSet
+    rows.flatMap(i => columns.map(j => Point(j, i))).toSet
   }
 
 }
