@@ -17,5 +17,4 @@ case class Cart(items: Map[ItemId, Quantity]) extends AnyVal
 
 case class CartItem(item: Item, quantity: Quantity)
 
-/* If I was to design it, I would probably go with fn: items -> total instead */
 case class CartTotal(items: List[CartItem], total: Money)
