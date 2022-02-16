@@ -1,4 +1,4 @@
-# From practical FP in scala
+# Exercise from 'practical FP in scala'
 ```
 • A guest user should be able to:
 – register into the system with a unique username and password.
