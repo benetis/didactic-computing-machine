@@ -1,7 +1,0 @@
-Regarding files in this folder (didactic-computing-machine/scala/shopping_cart/)
-
-Most of the code taken from the book Practical FP in Scala: A hands-on approach by Gabriel Volpe. 
-
-Therefore, instead of root repo's license (https://github.com/benetis/didactic-computing-machine/blob/master/LICENSE), *license of that book applies to the code taken from the book.*
-
-Fully implemented code by author himself can be found: https://github.com/gvolpe/pfps-shopping-cart
