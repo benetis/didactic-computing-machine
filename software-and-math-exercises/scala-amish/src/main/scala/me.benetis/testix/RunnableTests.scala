@@ -1,5 +1,6 @@
-package `me.benetis`.testix
+package `me.benetis`
+package testix
 
-trait RunnableTests extends TestDsl {
-  
+trait RunnableTests extends TestDsl with AssertDsl {
+  def suites: TestSuite
 }

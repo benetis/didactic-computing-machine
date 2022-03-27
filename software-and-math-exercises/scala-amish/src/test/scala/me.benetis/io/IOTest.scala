@@ -5,12 +5,12 @@ import testix._
 import me.benetis.io._
 
 object IOTest extends RunnableTests {
-  suite("")(
+  def suites = suite("")(
     test("Test")(
-      IO.pure(TestSuccess())
+      assertEqualM(IO.pure(1), IO.pure(1))
     ),  
     test("Test2")(
-      IO.pure(TestFailure())
+      assert("a" == "a")
     )
   )
 }
