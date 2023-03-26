@@ -4,17 +4,17 @@ defmodule Processes do
   @intro "Processes"
 
   koan "You are a process" do
-    assert Process.alive?(self()) == ___
+    assert Process.alive?(self()) == true
   end
 
   koan "You can ask a process to introduce itself" do
     information = Process.info(self())
 
-    assert information[:status] == ___
+    assert information[:status] == :running
   end
 
   koan "Processes are referenced by their process ID (pid)" do
-    assert is_pid(self()) == ___
+    assert is_pid(self()) == true
   end
 
   koan "New processes are spawned functions" do
@@ -24,7 +24,7 @@ defmodule Processes do
         end
       end)
 
-    assert is_pid(value) == ___
+    assert is_pid(value) == true
   end
 
   koan "Processes die when their function exits" do
@@ -36,15 +36,15 @@ defmodule Processes do
     # see if they are still alive!
     :timer.sleep(50)
 
-    assert Process.alive?(fast_process) == ___
-    assert Process.alive?(slow_process) == ___
+    assert Process.alive?(fast_process) == false
+    assert Process.alive?(slow_process) == true
   end
 
   koan "Processes can send and receive messages" do
     send(self(), "hola!")
 
     receive do
-      msg -> assert msg == ___
+      msg -> assert msg == "hola!"
     end
   end
 
@@ -56,7 +56,7 @@ defmodule Processes do
 
     pid = spawn(wait_forever)
 
-    assert Process.alive?(pid) == ___
+    assert Process.alive?(pid) == true
   end
 
   koan "Received messages are queued, first in first out" do
@@ -73,8 +73,8 @@ defmodule Processes do
         message -> message
       end
 
-    assert first_message == ___
-    assert second_message == ___
+    assert first_message == "hola!"
+    assert second_message == "como se llama?"
   end
 
   koan "A common pattern is to include the sender in the message, so that it can reply" do
@@ -90,7 +90,7 @@ defmodule Processes do
 
     timeout = 100 # ms
     failure_message = "Sorry, I didn't get the right message. Look at the message that is sent back very closely, and try again"
-    assert_receive ___, timeout, failure_message
+    assert_receive :how_are_you?, timeout, failure_message
   end
 
   def yelling_echo_loop do
@@ -105,10 +105,10 @@ defmodule Processes do
     pid = spawn_link(&yelling_echo_loop/0)
 
     send(pid, {self(), "o"})
-    assert_receive ___
+    assert_receive "O"
 
     send(pid, {self(), "hai"})
-    assert_receive ___
+    assert_receive "HAI"
   end
 
   def state(value) do
@@ -131,11 +131,11 @@ defmodule Processes do
       end)
 
     send(pid, {self(), :get})
-    assert_receive ___
+    assert_receive "foo"
 
     send(pid, {self(), :set, "bar"})
     send(pid, {self(), :get})
-    assert_receive ___
+    assert_receive "bar"
   end
 
   koan "Waiting for a message can get boring" do
@@ -148,7 +148,7 @@ defmodule Processes do
       end
     end)
 
-    assert_receive ___
+    assert_receive {:waited_too_long, "I am impatient"}
   end
 
   koan "Trapping will allow you to react to someone terminating the process" do
@@ -170,19 +170,19 @@ defmodule Processes do
 
     Process.exit(pid, :random_reason)
 
-    assert_receive ___
+    assert_receive {:exited, :random_reason}
   end
 
   koan "Parent processes can trap exits for children they are linked to" do
     Process.flag(:trap_exit, true)
     spawn_link(fn -> Process.exit(self(), :normal) end)
 
-    assert_receive {:EXIT, _pid, ___}
+    assert_receive {:EXIT, _pid, :normal}
   end
 
   koan "If you monitor your children, you'll be automatically informed of their departure" do
     spawn_monitor(fn -> Process.exit(self(), :normal) end)
 
-    assert_receive {:DOWN, _ref, :process, _pid, ___}
+    assert_receive {:DOWN, _ref, :process, _pid, :normal}
   end
 end
