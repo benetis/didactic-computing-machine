@@ -26,7 +26,7 @@ defmodule Chatlotle.ChannelTest do
       assert {:ok, %Message{} = message} = Channel.create_message(valid_attrs)
       assert message.is_read == true
       assert message.message == "some message"
-      assert message.user == "some user"
+      assert message.author == "some user"
     end
 
     test "create_message/1 with invalid data returns error changeset" do
@@ -40,7 +40,7 @@ defmodule Chatlotle.ChannelTest do
       assert {:ok, %Message{} = message} = Channel.update_message(message, update_attrs)
       assert message.is_read == false
       assert message.message == "some updated message"
-      assert message.user == "some updated user"
+      assert message.author == "some updated user"
     end
 
     test "update_message/2 with invalid data returns error changeset" do

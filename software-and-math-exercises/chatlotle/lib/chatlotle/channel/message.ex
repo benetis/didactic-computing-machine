@@ -5,7 +5,7 @@ defmodule Chatlotle.Channel.Message do
   schema "messages" do
     field :is_read, :boolean, default: false
     field :message, :string
-    field :user, :string, default: "admin"
+    field :author, :string, default: "admin"
 
     timestamps()
   end
