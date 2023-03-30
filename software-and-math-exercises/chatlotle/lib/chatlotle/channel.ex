@@ -53,6 +53,7 @@ defmodule Chatlotle.Channel do
     %Message{}
     |> Message.changeset(attrs)
     |> Repo.insert()
+    |> broadcast_new_message(:message_created)
   end
 
   @doc """
@@ -100,5 +101,16 @@ defmodule Chatlotle.Channel do
   """
   def change_message(%Message{} = message, attrs \\ %{}) do
     Message.changeset(message, attrs)
+  end
+
+  def subscribe do
+    Phoenix.PubSub.subscribe(Chatlotle.PubSub, "messages")
+  end
+
+  defp broadcast_new_message({:error, _reason} = error, _event), do: error
+
+  defp broadcast_new_message({:ok, message}, event) do
+    Phoenix.PubSub.broadcast(Chatlotle.PubSub, "messages", event, message)
+    {:ok, message}
   end
 end

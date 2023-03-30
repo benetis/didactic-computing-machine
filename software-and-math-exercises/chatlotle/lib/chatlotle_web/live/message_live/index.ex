@@ -6,6 +6,8 @@ defmodule ChatlotleWeb.MessageLive.Index do
 
   @impl true
   def mount(_params, _session, socket) do
+    if connected?(socket), do: Channel.subscribe()
+
     {:ok, stream(socket, :messages, Channel.list_messages())}
   end
 
@@ -36,6 +38,12 @@ defmodule ChatlotleWeb.MessageLive.Index do
   def handle_info({ChatlotleWeb.MessageLive.FormComponent, {:saved, message}}, socket) do
     {:noreply, stream_insert(socket, :messages, message)}
   end
+
+  @impl true
+  def handle_inf({:message_created, message}, socket) do
+    {:noreply, stream_insert(socket, :messages, message)}
+  end
+
 
   @impl true
   def handle_event("delete", %{"id" => id}, socket) do
