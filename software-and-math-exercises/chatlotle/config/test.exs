@@ -17,7 +17,7 @@ config :chatlotle, Chatlotle.Repo,
 # you can enable the server option below.
 config :chatlotle, ChatlotleWeb.Endpoint,
   http: [ip: {127, 0, 0, 1}, port: 4002],
-  secret_key_base: "Oyfix+WUgXx8CI9g/XtOmDdNNP6a+JO5KW/xQGCWAY7PfINcrLegfEdikRGgKd2K",
+  secret_key_base: "/xRKz0Vrl+XVmQNBWkgIXt4fJRcoqIg4X+FKDmFERqZ2a7s7uZubCQzSuDI+2w/i",
   server: false
 
 # In test we don't send emails.

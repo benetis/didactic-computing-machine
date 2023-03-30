@@ -7,7 +7,7 @@ defmodule ChatlotleWeb.Endpoint do
   @session_options [
     store: :cookie,
     key: "_chatlotle_key",
-    signing_salt: "aUJaGOkW",
+    signing_salt: "NBuVW6m0",
     same_site: "Lax"
   ]
 

@@ -23,7 +23,7 @@ config :chatlotle, ChatlotleWeb.Endpoint,
   check_origin: false,
   code_reloader: true,
   debug_errors: true,
-  secret_key_base: "ShA9BsEvbtwTvZaDmRWBwoekftP7lW8xmMpKLepiluuYtkG8L3BaqJ3EelsrOize",
+  secret_key_base: "dGPYhGopMt/rAI50NT5mcwlfEAGLYzt56w9PEM3szOYZbXadq/4VMgRBS06enRb1",
   watchers: [
     esbuild: {Esbuild, :install_and_run, [:default, ~w(--sourcemap=inline --watch)]},
     tailwind: {Tailwind, :install_and_run, [:default, ~w(--watch)]}

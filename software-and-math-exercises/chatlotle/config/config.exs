@@ -18,7 +18,7 @@ config :chatlotle, ChatlotleWeb.Endpoint,
     layout: false
   ],
   pubsub_server: Chatlotle.PubSub,
-  live_view: [signing_salt: "sbXl9PqJ"]
+  live_view: [signing_salt: "wXJZZ1M3"]
 
 # Configures the mailer
 #
