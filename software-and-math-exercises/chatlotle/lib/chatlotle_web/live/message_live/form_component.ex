@@ -19,9 +19,7 @@ defmodule ChatlotleWeb.MessageLive.FormComponent do
         phx-change="validate"
         phx-submit="save"
       >
-        <.input field={@form[:user]} type="text" label="User" />
-        <.input field={@form[:message]} type="text" label="Message" />
-        <.input field={@form[:is_read]} type="checkbox" label="Is read" />
+        <.input field={@form[:message]} type="textarea" label="Message" />
         <:actions>
           <.button phx-disable-with="Saving...">Save Message</.button>
         </:actions>

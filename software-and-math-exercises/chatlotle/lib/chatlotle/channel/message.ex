@@ -5,7 +5,7 @@ defmodule Chatlotle.Channel.Message do
   schema "messages" do
     field :is_read, :boolean, default: false
     field :message, :string
-    field :user, :string
+    field :user, :string, default: "admin"
 
     timestamps()
   end
@@ -13,7 +13,8 @@ defmodule Chatlotle.Channel.Message do
   @doc false
   def changeset(message, attrs) do
     message
-    |> cast(attrs, [:user, :message, :is_read])
-    |> validate_required([:user, :message, :is_read])
+    |> cast(attrs, [:message])
+    |> validate_required([:message])
+    |> validate_length(:message, min: 1, max: 200)
   end
 end
