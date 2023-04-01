@@ -39,6 +39,12 @@ class IOSuite extends munit.FunSuite {
     runAndExpectFailure(io, "Boom!")
   }
 
+  test("IO.recoverWith should recover from failure") {
+    val io = IO.fail(new Exception("Boom!")).recoverWith(_ => IO.pure(42))
+
+    assertEquals(Runtime.unsafeRun(io), Success(42))
+  }
+
   def runAndExpectFailure[A](io: IO[A], expectedMessage: String): Unit =
     Runtime.unsafeRun(io) match
       case Failure(exception) =>

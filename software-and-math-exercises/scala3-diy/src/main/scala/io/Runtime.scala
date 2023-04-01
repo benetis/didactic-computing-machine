@@ -14,6 +14,10 @@ object Runtime {
         case Failure(exception) => Failure(exception)
         case Success(value)     => unsafeRun(f(value))
     case IO.Fail(exception) => Failure(exception)
+    case IO.RecoverWith(io, f) =>
+      unsafeRun(io) match
+        case Failure(exception) => unsafeRun(f(exception))
+        case Success(value)     => Success(value)
   }
 
 }
