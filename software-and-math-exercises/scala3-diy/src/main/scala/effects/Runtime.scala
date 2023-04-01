@@ -1,6 +1,6 @@
-package io
+package effects
 
-import io.IO.*
+import effects.IO.*
 
 import scala.util._
 

@@ -1,6 +1,6 @@
-package io
+package effects
 
-import io.IO
+import effects.IO
 
 enum IO[+A]:
   case Pure(a: () => A) extends IO[A]
