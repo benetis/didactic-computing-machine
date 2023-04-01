@@ -19,4 +19,10 @@ object IO {
   def pure[A](a: => A): IO[A] = IO.Pure(() => a)
   def effect[A](io: => A): IO[A] = IO.Effect(() => io)
   def fail[A](e: Throwable): IO[A] = IO.Fail(e)
+  def acquireAndRelease[A, B](
+      acquire: IO[A],
+      release: A => IO[B],
+      use: A => IO[B]
+  ): IO[B] =
+    acquire.flatMap(a => use(a).flatMap(b => release(a).map(_ => b)))
 }

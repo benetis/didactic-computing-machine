@@ -55,6 +55,26 @@ class IOSuite extends munit.FunSuite {
     assert(second)
   }
 
+  test("IO.acquireAndRelease should acquire and release resources") {
+    var acquire = false
+    var release = false
+
+    var inUse = 0
+
+    val io = IO.acquireAndRelease(
+      IO.effect { acquire = true; 42 },
+      _ => IO.effect { release = true },
+      a => IO.effect { inUse = a }
+    )
+
+    assert(!acquire)
+    assert(!release)
+    assertEquals(Runtime.unsafeRun(io), Success(()))
+    assert(acquire)
+    assert(release)
+    assertEquals(inUse, 42)
+  }
+
   def runAndExpectFailure[A](io: IO[A], expectedMessage: String): Unit =
     Runtime.unsafeRun(io) match
       case Failure(exception) =>
