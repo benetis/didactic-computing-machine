@@ -64,12 +64,12 @@ class IOSuite extends munit.FunSuite {
     val io = IO.acquireAndRelease(
       IO.effect { acquire = true; 42 },
       _ => IO.effect { release = true },
-      a => IO.effect { inUse = a }
+      a => IO.effect { inUse = a; inUse }
     )
 
     assert(!acquire)
     assert(!release)
-    assertEquals(Runtime.unsafeRun(io), Success(()))
+    assertEquals(Runtime.unsafeRun(io), Success(42))
     assert(acquire)
     assert(release)
     assertEquals(inUse, 42)
