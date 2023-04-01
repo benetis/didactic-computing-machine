@@ -45,6 +45,16 @@ class IOSuite extends munit.FunSuite {
     assertEquals(Runtime.unsafeRun(io), Success(42))
   }
 
+  test("IO *> should run effects in sequence") {
+    var first = false
+    var second = false
+    val io = IO.effect { first = true } *> IO.effect { second = true }
+
+    assertEquals(Runtime.unsafeRun(io), Success(()))
+    assert(first)
+    assert(second)
+  }
+
   def runAndExpectFailure[A](io: IO[A], expectedMessage: String): Unit =
     Runtime.unsafeRun(io) match
       case Failure(exception) =>

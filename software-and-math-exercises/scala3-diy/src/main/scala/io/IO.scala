@@ -13,6 +13,7 @@ enum IO[+A]:
   def map[B](f: A => B): IO[B] = flatMap(a => IO.Pure(() => f(a)))
   def recoverWith[B >: A](f: Throwable => IO[B]): IO[B] =
     RecoverWith(this, f)
+  def *>[B](io: IO[B]): IO[B] = flatMap(_ => io)
 
 object IO {
   def pure[A](a: => A): IO[A] = IO.Pure(() => a)
