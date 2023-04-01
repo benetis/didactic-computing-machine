@@ -13,6 +13,7 @@ object Runtime {
       unsafeRun(io) match
         case Failure(exception) => Failure(exception)
         case Success(value)     => unsafeRun(f(value))
+    case IO.Fail(exception) => Failure(exception)
   }
 
 }
