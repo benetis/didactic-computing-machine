@@ -4,4 +4,5 @@ enum Element {
 
   case Text(text: String)
   case Div(children: Element*)
+  case Span(children: Element*)
 }

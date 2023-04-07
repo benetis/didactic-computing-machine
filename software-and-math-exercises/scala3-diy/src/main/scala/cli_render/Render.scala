@@ -20,7 +20,12 @@ object Render {
 
     element match
       case Element.Text(text) => ConsoleOutput(text)
+
       case Element.Div(children @ _*) =>
+        val childrenOutput = children.map(compile)
+        val childrenText = childrenOutput.map(_.value).mkString
+        ConsoleOutput("\n" + childrenText)
+      case Element.Span(children @ _*) =>
         val childrenOutput = children.map(compile)
         val childrenText = childrenOutput.map(_.value).mkString
         ConsoleOutput(childrenText)

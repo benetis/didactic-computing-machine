@@ -16,7 +16,14 @@ class CLISuite extends munit.FunSuite {
 
     val div = Element.Div()
 
-    assertEquals(Render.compile(div), "".output)
+    assertEquals(Render.compile(div), "\n".output)
+  }
+
+  test("Compile should render empty Span") {
+
+    val span = Element.Span()
+
+    assertEquals(Render.compile(span), "".output)
   }
 
   test("Compile should render a Div with a single child") {
@@ -25,18 +32,36 @@ class CLISuite extends munit.FunSuite {
       Element.Text("Hello World")
     )
 
-    assertEquals(Render.compile(div), "Hello World".output)
+    assertEquals(Render.compile(div), "\nHello World".output)
   }
 
-  test("Compile should render a Div with multiple children") {
+  test("Compile should render a Span with multiple children") {
 
-    val div = Element.Div(
+    val span = Element.Span(
       Element.Text("Hello"),
       Element.Text(" "),
       Element.Text("World")
     )
 
-    assertEquals(Render.compile(div), "Hello World".output)
+    assertEquals(Render.compile(span), "Hello World".output)
+  }
+
+  test("Each div should be in a new line") {
+
+    val div = Element.Span(
+      Element.Div(
+        Element.Text("Hello"),
+        Element.Text(" "),
+        Element.Text("World")
+      ),
+      Element.Div(
+        Element.Text("Hello"),
+        Element.Text(" "),
+        Element.Text("World")
+      )
+    )
+
+    assertEquals(Render.compile(div), "\nHello World\nHello World".output)
   }
 
   extension (s: String) def output: ConsoleOutput = ConsoleOutput(s)
