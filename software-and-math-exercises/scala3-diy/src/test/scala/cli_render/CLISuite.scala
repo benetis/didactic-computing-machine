@@ -64,6 +64,35 @@ class CLISuite extends munit.FunSuite {
     assertEquals(Render.compile(div), "\nHello World\nHello World".output)
   }
 
+  test("Should render simple UI with question, answer and choices") {
+
+    val ui = Element.Span(
+      Element.Div(
+        Element.Text("What is your name?")
+      ),
+      Element.Div(
+        Element.Text("John")
+      ),
+      Element.Div(
+        Element.Text("Remind me in:")
+      ),
+      Element.Div(
+        Element.Text(">In 1<"),
+        Element.Text(" "),
+        Element.Text(">In 2<")
+      )
+    )
+
+    assertEquals(
+      Render.compile(ui),
+      """
+        |What is your name?
+        |John
+        |Remind me in:
+        |>In 1< >In 2<""".stripMargin.output
+    )
+  }
+
   extension (s: String) def output: ConsoleOutput = ConsoleOutput(s)
 
 }
