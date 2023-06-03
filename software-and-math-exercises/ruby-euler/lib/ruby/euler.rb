@@ -72,5 +72,22 @@ module Ruby
         @products.filter(&method(:is_number_palindrome?)).max
       end
     end
+
+    class SmallestMultiple
+
+      def initialize
+        @candidates = Enumerator.new do |generator|
+          nominee = 2520
+          loop do
+            generator << nominee if (11..20).all? { |divisor| (nominee % divisor).zero? }
+            nominee += 20
+          end
+        end
+      end
+
+      def calculate
+        @candidates.lazy.take(1).first
+      end
+    end
   end
 end

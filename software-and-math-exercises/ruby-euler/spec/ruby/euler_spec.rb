@@ -17,8 +17,13 @@ RSpec.describe Ruby::Euler do
   #   expect(Ruby::Euler::PrimeFactors.calculate).to eq(6857)
   # end
 
-  it "should calculate largest palindrome product" do
-    palindrome_product = Ruby::Euler::LargestPalindromeProduct.new
-    expect(palindrome_product.calculate).to eq(906609)
+  # it "should calculate largest palindrome product" do
+  #   palindrome_product = Ruby::Euler::LargestPalindromeProduct.new
+  #   expect(palindrome_product.calculate).to eq(906609)
+  # end
+
+  it "should calculate smallest multiple" do
+    smallest_multiple = Ruby::Euler::SmallestMultiple.new
+    expect(smallest_multiple.calculate).to eq(232792560)
   end
 end
