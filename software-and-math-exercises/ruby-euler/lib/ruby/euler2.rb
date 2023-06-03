@@ -11,4 +11,20 @@ module Euler2
       square_of_sum - sum_of_squares
     end
   end
+
+  class Find10001stPrime
+    @primes = Enumerator.new do |generator|
+      generator << 2
+      generator << 3
+      nominee = 5
+      loop do
+        generator << nominee if Prime.prime?(nominee)
+        nominee += 2
+      end
+    end
+
+    def self.calculate
+      @primes.take(10001).last
+    end
+  end
 end
