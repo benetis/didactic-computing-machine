@@ -1,8 +1,6 @@
 # frozen_string_literal: true
 
-require 'rspec'
-
-RSpec.describe 'Euler2' do
+RSpec.describe "Euler2" do
   before do
     # Do nothing
   end
@@ -11,8 +9,8 @@ RSpec.describe 'Euler2' do
     # Do nothing
   end
 
-  it 'succeeds' do
-    pending 'Not implemented'
+  it "should calculate sum square difference" do
+    expect(Euler2::SumSquareDifference.calculate).to eq(25164150)
   end
 
 end

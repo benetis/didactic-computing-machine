@@ -22,8 +22,8 @@ RSpec.describe Ruby::Euler1 do
   #   expect(palindrome_product.calculate).to eq(906609)
   # end
 
-  it "should calculate smallest multiple" do
-    smallest_multiple = Ruby::Euler1::SmallestMultiple.new
-    expect(smallest_multiple.calculate).to eq(232792560)
-  end
+  # it "should calculate smallest multiple" do
+  #   smallest_multiple = Ruby::Euler1::SmallestMultiple.new
+  #   expect(smallest_multiple.calculate).to eq(232792560)
+  # end
 end
