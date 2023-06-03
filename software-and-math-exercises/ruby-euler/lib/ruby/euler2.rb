@@ -5,8 +5,8 @@ module Euler2
     def self.calculate
       natural_nums = (1..100)
 
-      sum_of_squares = natural_nums.map { |num| num ** 2 }.sum
-      square_of_sum = natural_nums.sum ** 2
+      sum_of_squares = natural_nums.map { |num| num**2 }.sum
+      square_of_sum = natural_nums.sum**2
 
       square_of_sum - sum_of_squares
     end
@@ -24,7 +24,7 @@ module Euler2
     end
 
     def self.calculate
-      @primes.take(10001).last
+      @primes.take(10_001).last
     end
   end
 
@@ -65,6 +65,19 @@ module Euler2
 
     def calculate
       @contiguous_sequences.map { |sequence| sequence.reduce(&:*) }.max
+    end
+  end
+
+  class SpecialPythagoreanTriplet
+    def calculate
+      (1..1000).each do |num|
+        (num + 1..1000).each do |num2|
+          (num2 + 1..1000).each do |num3|
+            next unless num + num2 + num3 == 1000
+            return num * num2 * num3 if num**2 + num2**2 == num3**2
+          end
+        end
+      end
     end
   end
 end

@@ -12,4 +12,8 @@ RSpec.describe "Euler2" do
   #   largest_product = Euler2::LargestProductInASeries.new
   #   expect(largest_product.calculate).to eq(23514624000)
   # end
+  it "should find pyhtagorean triplet" do
+    pythagorean_triplet = Euler2::SpecialPythagoreanTriplet.new
+    expect(pythagorean_triplet.calculate).to eq(1)
+  end
 end
