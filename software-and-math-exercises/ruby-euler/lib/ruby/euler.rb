@@ -47,8 +47,29 @@ module Ruby
           nominee += 2
         end
       end
+
       def self.calculate
         @primes.lazy.take_while { |num| num < Math.sqrt(@search_target) }.filter { |num| (@search_target % num).zero? }.max
+      end
+    end
+
+    class LargestPalindromeProduct
+      def initialize
+        @products = Enumerator.new do |generator|
+          (100..999).reverse_each do |a|
+            (100..999).reverse_each do |b|
+              generator << a * b
+            end
+          end
+        end.lazy
+      end
+
+      def is_number_palindrome?(num)
+        num.to_s == num.to_s.reverse
+      end
+
+      def calculate
+        @products.filter(&method(:is_number_palindrome?)).max
       end
     end
   end
