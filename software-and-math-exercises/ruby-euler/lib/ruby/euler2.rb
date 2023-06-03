@@ -5,8 +5,8 @@ module Euler2
     def self.calculate
       natural_nums = (1..100)
 
-      sum_of_squares = natural_nums.map { |num| num**2}.sum
-      square_of_sum = natural_nums.sum**2
+      sum_of_squares = natural_nums.map { |num| num ** 2 }.sum
+      square_of_sum = natural_nums.sum ** 2
 
       square_of_sum - sum_of_squares
     end
@@ -54,11 +54,17 @@ module Euler2
       DIGITS
 
       @digits = @digits.gsub(/\s+/, "").split("").map(&:to_i)
+
+      @contiguous_sequences = Enumerator.new do |generator|
+        @digits.each_with_index do |_num, index|
+          sequence = @digits[index..index + 12]
+          generator << sequence
+        end
+      end
     end
 
     def calculate
-      puts @digits
-      2
+      @contiguous_sequences.map { |sequence| sequence.reduce(&:*) }.max
     end
   end
 end

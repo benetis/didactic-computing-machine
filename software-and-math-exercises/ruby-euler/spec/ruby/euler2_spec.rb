@@ -10,6 +10,6 @@ RSpec.describe "Euler2" do
   # end
   it "should find largest product in a series" do
     largest_product = Euler2::LargestProductInASeries.new
-    expect(largest_product.calculate).to eq(1)
+    expect(largest_product.calculate).to eq(23514624000)
   end
 end
