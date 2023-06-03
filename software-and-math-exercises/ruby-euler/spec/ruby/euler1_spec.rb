@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
-RSpec.describe Ruby::Euler do
+RSpec.describe Ruby::Euler1 do
   it "has a version number" do
-    expect(Ruby::Euler::VERSION).not_to be nil
+    expect(Ruby::Euler1::VERSION).not_to be nil
   end
 
   # it "should calculate multiples of 3 and 5" do
@@ -23,7 +23,7 @@ RSpec.describe Ruby::Euler do
   # end
 
   it "should calculate smallest multiple" do
-    smallest_multiple = Ruby::Euler::SmallestMultiple.new
+    smallest_multiple = Ruby::Euler1::SmallestMultiple.new
     expect(smallest_multiple.calculate).to eq(232792560)
   end
 end

@@ -4,7 +4,7 @@ require_relative "euler/version"
 require 'prime'
 
 module Ruby
-  module Euler
+  module Euler1
     class Error < StandardError; end
 
     class MultiplesOf3And5
