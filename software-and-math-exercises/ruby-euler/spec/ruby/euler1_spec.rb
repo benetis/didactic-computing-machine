@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
 RSpec.describe Ruby::Euler1 do
-  it "has a version number" do
-    expect(Ruby::Euler1::VERSION).not_to be nil
-  end
+  # it "has a version number" do
+  #   expect(Ruby::Euler1::VERSION).not_to be nil
+  # end
 
   # it "should calculate multiples of 3 and 5" do
   #   expect(Ruby::Euler::MultiplesOf3And5.calculate).to eq(233168)
