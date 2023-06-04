@@ -12,6 +12,6 @@ module Ruby
 
     counter = ::CalorieCounter.new
 
-    counter.calculate
+    counter.calculate_top_three
   end
 end
