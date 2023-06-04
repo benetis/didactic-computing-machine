@@ -35,4 +35,12 @@ class CalorieCounter
 
     Output.to_console(max_calories)
   end
+
+  def calculate_top_three
+    bean_count_elves
+
+    top_three = @elves.sort_by { |elf| -elf[:calories] }.map { |elf| elf[:calories] }.take(3).sum
+
+    Output.to_console(top_three)
+  end
 end

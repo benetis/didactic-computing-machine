@@ -22,8 +22,30 @@ RSpec.describe CalorieCounter do
     expect(@counter.instance_variable_get(:@elves)).to eq([{ calories: 700 }, { calories: 500 }])
   end
 
-  it "find elf with maximum calories" do
+  it "should find elf with maximum calories" do
     expect(Output).to receive(:to_console).with(700)
     @counter.calculate
   end
+
+  describe "top three elf calories" do
+    let(:test_input) do
+      [
+        "500",
+        "200", # 700
+        "",
+        "400",
+        "100", # 1200
+        "",
+        "400", # 1600
+        "",
+        "100" # excluded
+      ]
+    end
+
+    it "should find top three elves summed calories" do
+      expect(Output).to receive(:to_console).with(1600)
+      @counter.calculate_top_three
+    end
+  end
+
 end
