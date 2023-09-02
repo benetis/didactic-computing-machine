@@ -39,7 +39,7 @@ fn select_query(input: &str) -> IResult<&str, SqlQuery> {
 }
 
 
-fn select_parser(input: &str) -> IResult<&str, SqlQuery> {
+pub fn select_parser(input: &str) -> IResult<&str, SqlQuery> {
     select_query(input)
 }
 

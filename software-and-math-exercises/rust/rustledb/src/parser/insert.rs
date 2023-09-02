@@ -19,7 +19,7 @@ fn values_keyword(input: &str) -> IResult<&str, &str> {
     preceded(multispace1, tag_no_case("VALUES"))(input)
 }
 
-fn insert_parser(input: &str) -> IResult<&str, SqlQuery> {
+pub fn insert_parser(input: &str) -> IResult<&str, SqlQuery> {
     map(
         tuple((
             insert_keyword,
