@@ -1,5 +1,5 @@
 use nom::{
-    character::complete::{alpha1, multispace0, multispace1},
+    character::complete::{multispace0, multispace1},
     combinator::map,
     multi::separated_list1,
     sequence::{preceded, tuple},
@@ -10,10 +10,8 @@ use nom::combinator::opt;
 use nom::sequence::terminated;
 
 use crate::model::select::*;
-
-fn identifier(input: &str) -> IResult<&str, String> {
-    map(alpha1, String::from)(input)
-}
+use crate::model::SqlQuery;
+use crate::parser::utils::*;
 
 fn select(input: &str) -> IResult<&str, &str> {
     tag_no_case("SELECT")(input)
@@ -54,19 +52,13 @@ fn select_query(input: &str) -> IResult<&str, SqlQuery> {
 }
 
 
-fn sql_parser(input: &str) -> IResult<&str, SqlQuery> {
+fn select_parser(input: &str) -> IResult<&str, SqlQuery> {
     select_query(input)
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    #[test]
-    fn test_identifier() {
-        assert_eq!(identifier("name"), Ok(("", "name".to_string())));
-        assert_eq!(identifier("age"), Ok(("", "age".to_string())));
-    }
 
     #[test]
     fn test_columns() {
@@ -80,7 +72,7 @@ mod tests {
     #[test]
     fn test_select_query() {
         assert_eq!(
-            sql_parser("SELECT name, age FROM users"),
+            select_parser("SELECT name, age FROM users"),
             Ok((
                 "",
                 SqlQuery::Select(SelectQuery {
@@ -92,7 +84,7 @@ mod tests {
         );
 
         assert_eq!(
-            sql_parser("SELECT name FROM users WHERE active"),
+            select_parser("SELECT name FROM users WHERE active"),
             Ok((
                 "",
                 SqlQuery::Select(SelectQuery {
@@ -106,6 +98,6 @@ mod tests {
 
     #[test]
     fn test_invalid_query() {
-        assert!(sql_parser("INSERT INTO users (name) VALUES ('John')").is_err());
+        assert!(select_parser("INSERT INTO users (name) VALUES ('John')").is_err());
     }
 }
