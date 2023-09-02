@@ -1,13 +1,11 @@
 use nom::{
     character::complete::{multispace0, multispace1},
     combinator::map,
-    multi::separated_list1,
-    sequence::{preceded, tuple},
     IResult,
+    sequence::{preceded, tuple},
 };
 use nom::bytes::complete::tag_no_case;
 use nom::combinator::opt;
-use nom::sequence::terminated;
 
 use crate::model::select::*;
 use crate::model::SqlQuery;
@@ -15,17 +13,6 @@ use crate::parser::utils::*;
 
 fn select(input: &str) -> IResult<&str, &str> {
     tag_no_case("SELECT")(input)
-}
-
-fn column_separator(input: &str) -> IResult<&str, &str> {
-    preceded(
-        multispace0,
-        terminated(tag_no_case(","), multispace0)
-    )(input)
-}
-
-fn columns(input: &str) -> IResult<&str, Vec<String>> {
-    separated_list1(column_separator, identifier)(input)
 }
 
 fn from(input: &str) -> IResult<&str, &str> {
@@ -36,7 +23,7 @@ fn select_query(input: &str) -> IResult<&str, SqlQuery> {
     map(
         tuple((
             preceded(multispace0, select),
-            preceded(multispace1, columns),
+            preceded(multispace1, fields),
             preceded(multispace1, from),
             preceded(multispace1, identifier),
             opt(tuple((
@@ -59,15 +46,6 @@ fn select_parser(input: &str) -> IResult<&str, SqlQuery> {
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    #[test]
-    fn test_columns() {
-        assert_eq!(
-            columns("name, age"),
-            Ok(("", vec!["name".to_string(), "age".to_string()]))
-        );
-    }
-
 
     #[test]
     fn test_select_query() {
