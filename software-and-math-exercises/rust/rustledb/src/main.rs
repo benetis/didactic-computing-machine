@@ -1,6 +1,9 @@
 mod parser;
 mod model;
+mod storage;
 
 fn main() {
-    println!("Hello, world!");
+    use crate::storage::file::StorageAlgebra;
+
+    let mut storage  = storage::file::Storage::create("test.rustledb".to_string());
 }
