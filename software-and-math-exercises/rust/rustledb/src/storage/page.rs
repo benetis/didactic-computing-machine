@@ -1,11 +1,28 @@
+use nom::ToUsize;
 use crate::storage::file::{Storage, StorageAlgebra, StorageError};
 
-pub const PAGE_SIZE: usize = 4096;
+pub const PAGE_META_SIZE: usize = 8;
+pub const PAGE_DATA_SIZE: usize = 4088;
+pub const PAGE_SIZE: usize = PAGE_META_SIZE + PAGE_DATA_SIZE;
 
 #[derive(Debug)]
 pub struct Page {
     pub id: usize,
-    pub data: [u8; PAGE_SIZE],
+    pub data: [u8; PAGE_DATA_SIZE],
+    pub used: usize,
+}
+
+impl Page {
+    pub fn insert_data(&mut self, new_data: &[u8]) -> Result<(), StorageError> {
+        if self.used + new_data.len() > PAGE_SIZE {
+            return Err(StorageError::CustomError("Insufficient space in page".into()));
+        }
+
+        self.data[self.used..self.used + new_data.len()].copy_from_slice(new_data);
+        self.used += new_data.len();
+
+        Ok(())
+    }
 }
 
 pub struct PageManager {
@@ -26,10 +43,17 @@ impl PageManager {
 
         let new_page = Page {
             id: new_id,
-            data: [0; PAGE_SIZE],
+            data: [0; PAGE_DATA_SIZE],
+            used: 0,
         };
 
-        self.storage.write_block(new_page.id, &new_page.data)?;
+        let meta_buffer: [u8; 8] = 0u64.to_be_bytes();
+
+        let mut buffer = [0u8; PAGE_SIZE];
+        buffer[0..8].copy_from_slice(&meta_buffer);
+        buffer[8..].copy_from_slice(&new_page.data);
+
+        self.storage.write_block(new_page.id, &buffer)?;
 
         Ok(new_page)
     }
@@ -39,9 +63,12 @@ impl PageManager {
 
         self.storage.read_block(page_id, &mut buffer)?;
 
+        let (used, data) = buffer.split_at(PAGE_META_SIZE);
+
         Ok(Page {
             id: page_id,
-            data: buffer,
+            data: data.try_into().unwrap(),
+            used: u64::from_be_bytes(used.try_into().unwrap()).to_usize(),
         })
     }
 
