@@ -16,8 +16,19 @@ fn main() {
 
     println!("<<<>>>");
 
-    let page_read = page_manager.read_page(0).unwrap();
+    let mut page_read = page_manager.read_page(0).unwrap();
 
     println!("page_read: {:?}", page_read.data.iter().len());
+
+    println!("<<<>>>");
+
+    page_read.insert_data("Hello World!".as_bytes()).unwrap();
+    page_read.insert_data("Not me".as_bytes()).unwrap();
+
+    println!("page_read: {:?}", page_read.data.iter().len());
+
+    let hello = page_read.find_data("Not me".as_bytes()).unwrap();
+
+    println!("hello: {:?}", hello);
 
 }

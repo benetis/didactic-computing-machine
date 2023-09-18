@@ -23,6 +23,25 @@ impl Page {
 
         Ok(())
     }
+
+    pub fn find_data(&self, data: &[u8]) -> Option<usize> {
+        let mut index = 0;
+        let mut found = false;
+
+        while index < self.used {
+            if self.data[index..index + data.len()] == data[..] {
+                found = true;
+                break;
+            }
+            index += 1;
+        }
+
+        if found {
+            Some(index)
+        } else {
+            None
+        }
+    }
 }
 
 pub struct PageManager {
@@ -81,4 +100,55 @@ impl PageManager {
         }
     }
 
+}
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_insert_data() {
+        let mut page = Page {
+            id: 1,
+            data: [0; PAGE_DATA_SIZE],
+            used: 0,
+        };
+
+        let data_to_insert = [1, 2, 3];
+
+        page.insert_data(&data_to_insert).unwrap();
+        assert_eq!(page.used, 3);
+        assert_eq!(&page.data[0..3], &data_to_insert);
+    }
+
+    #[test]
+    fn test_find_data() {
+        let mut initial_data = [0; PAGE_DATA_SIZE];
+        let data_slice = [1, 2, 3, 4, 5, 6];
+        initial_data[0..6].copy_from_slice(&data_slice);
+
+        let page = Page {
+            id: 1,
+            data: initial_data,
+            used: 6,
+        };
+
+        assert_eq!(page.find_data(&[2, 3]), Some(1));
+        assert_eq!(page.find_data(&[4, 5, 6]), Some(3));
+
+        assert_eq!(page.find_data(&[7, 8]), None);
+    }
+
+    #[test]
+    fn test_insert_and_find() {
+        let mut page = Page {
+            id: 1,
+            data: [0; PAGE_DATA_SIZE],
+            used: 0,
+        };
+
+        let data_to_insert = [1, 2, 3];
+        page.insert_data(&data_to_insert).unwrap();
+
+        assert_eq!(page.find_data(&[1, 2, 3]), Some(0));
+    }
 }
