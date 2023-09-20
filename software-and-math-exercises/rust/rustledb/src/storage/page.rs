@@ -1,25 +1,30 @@
 use nom::ToUsize;
 use crate::storage::file::{Storage, StorageAlgebra, StorageError};
 
-pub const PAGE_META_SIZE: usize = 8;
+pub const PAGE_HEADER_SIZE: usize = 8;
 pub const PAGE_DATA_SIZE: usize = 4088;
-pub const PAGE_SIZE: usize = PAGE_META_SIZE + PAGE_DATA_SIZE;
+pub const PAGE_SIZE: usize = PAGE_HEADER_SIZE + PAGE_DATA_SIZE;
 
 #[derive(Debug)]
 pub struct Page {
     pub id: usize,
     pub data: [u8; PAGE_DATA_SIZE],
+    pub header: PageHeader,
+}
+
+#[derive(Debug)]
+pub struct PageHeader {
     pub used: usize,
 }
 
 impl Page {
     pub fn insert_data(&mut self, new_data: &[u8]) -> Result<(), StorageError> {
-        if self.used + new_data.len() > PAGE_SIZE {
+        if self.header.used + new_data.len() > PAGE_SIZE {
             return Err(StorageError::CustomError("Insufficient space in page".into()));
         }
 
-        self.data[self.used..self.used + new_data.len()].copy_from_slice(new_data);
-        self.used += new_data.len();
+        self.data[self.header.used..self.header.used + new_data.len()].copy_from_slice(new_data);
+        self.header.used += new_data.len();
 
         Ok(())
     }
@@ -28,7 +33,7 @@ impl Page {
         let mut index = 0;
         let mut found = false;
 
-        while index < self.used {
+        while index < self.header.used {
             if self.data[index..index + data.len()] == data[..] {
                 found = true;
                 break;
@@ -41,6 +46,15 @@ impl Page {
         } else {
             None
         }
+    }
+}
+
+impl PageHeader {
+    pub fn new() -> Self {
+        Self { used: 0 }
+    }
+    pub fn read_from_buffer(buffer: &[u8]) -> Self {
+        Self { used: u64::from_be_bytes(buffer.try_into().unwrap()).to_usize() }
     }
 }
 
@@ -63,7 +77,7 @@ impl PageManager {
         let new_page = Page {
             id: new_id,
             data: [0; PAGE_DATA_SIZE],
-            used: 0,
+            header: PageHeader::new()
         };
 
         let meta_buffer: [u8; 8] = 0u64.to_be_bytes();
@@ -82,12 +96,12 @@ impl PageManager {
 
         self.storage.read_block(page_id, &mut buffer)?;
 
-        let (used, data) = buffer.split_at(PAGE_META_SIZE);
+        let (header, data) = buffer.split_at(PAGE_HEADER_SIZE);
 
         Ok(Page {
             id: page_id,
             data: data.try_into().unwrap(),
-            used: u64::from_be_bytes(used.try_into().unwrap()).to_usize(),
+            header: PageHeader::read_from_buffer(header),
         })
     }
 
@@ -110,13 +124,13 @@ mod tests {
         let mut page = Page {
             id: 1,
             data: [0; PAGE_DATA_SIZE],
-            used: 0,
+            header: PageHeader::new(),
         };
 
         let data_to_insert = [1, 2, 3];
 
         page.insert_data(&data_to_insert).unwrap();
-        assert_eq!(page.used, 3);
+        assert_eq!(page.header.used, 3);
         assert_eq!(&page.data[0..3], &data_to_insert);
     }
 
@@ -129,7 +143,7 @@ mod tests {
         let page = Page {
             id: 1,
             data: initial_data,
-            used: 6,
+            header: PageHeader { used: 6 }
         };
 
         assert_eq!(page.find_data(&[2, 3]), Some(1));
@@ -143,7 +157,7 @@ mod tests {
         let mut page = Page {
             id: 1,
             data: [0; PAGE_DATA_SIZE],
-            used: 0,
+            header: PageHeader::new(),
         };
 
         let data_to_insert = [1, 2, 3];
