@@ -6,7 +6,7 @@ fn main() {
     use crate::storage::file::StorageAlgebra;
 
     let mut storage =
-        storage::file::Storage::create("test.rustledb".to_string()).unwrap();
+        storage::file::FileStorage::create("test.rustledb".to_string()).unwrap();
     //
     // let mut page_manager = storage::opage::PageManager::new(storage);
     //
