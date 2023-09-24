@@ -1,5 +1,5 @@
 pub enum ColumnarType {
-    Int(i32),
+    Int(usize),
     Varchar(String, usize),
 }
 
