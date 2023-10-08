@@ -1,6 +1,8 @@
-use bytes::BytesMut;
+use std::io::Cursor;
+use bytes::{BufMut, BytesMut};
 use tokio::net::TcpStream;
 use mini_redis::{Frame, Result};
+use mini_redis::frame::Error;
 use tokio::io::AsyncReadExt;
 
 struct Connection {
@@ -43,6 +45,20 @@ impl Connection {
     }
 
     fn parse_frame(&mut self) -> Result<Option<Frame>> {
-        todo!()
+        let mut buf = Cursor::new(&self.buffer[..]);
+
+        match Frame::check(&mut buf) {
+            Ok(_) => {
+                let length = buf.position() as usize;
+
+                buf.set_position(0);
+                let frame = Frame::parse(&mut buf)?;
+
+                buf.set_position(length as u64);
+                Ok(Some(frame))
+            }
+            Err(_Incomplete) => Ok(None),
+        }
+
     }
 }
