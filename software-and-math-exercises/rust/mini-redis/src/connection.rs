@@ -1,12 +1,13 @@
-use std::io::Cursor;
+use std::io;
+use std::io::{BufWriter, Cursor};
 use bytes::{BufMut, BytesMut};
 use tokio::net::TcpStream;
 use mini_redis::{Frame, Result};
 use mini_redis::frame::Error;
-use tokio::io::AsyncReadExt;
+use tokio::io::{AsyncReadExt, AsyncWriteExt};
 
 struct Connection {
-    stream: TcpStream,
+    stream: BufWriter<TcpStream>,
     buffer: Vec<u8>,
     cursor: usize
 }
@@ -14,7 +15,7 @@ struct Connection {
 impl Connection {
     pub fn new(stream: TcpStream) -> Connection {
         Connection {
-            stream,
+            stream: BufWriter::new(stream),
             buffer: vec![0; 4096],
             cursor: 0,
         }
@@ -42,6 +43,39 @@ impl Connection {
                 self.cursor += n_read;
             }
         }
+    }
+
+    pub async fn write_frame(&mut self, frame: &Frame) -> io::Result<()> {
+        match frame {
+            Frame::Simple(val) => {
+                self.stream.write_u8(b'+').await?;
+                self.stream.write_all(val.as_bytes()).await?;
+                self.stream.write_all(b"\r\n").await?;
+            }
+            Frame::Error(val) => {
+                self.stream.write_u8(b'-').await?;
+                self.stream.write_all(val.as_bytes()).await?;
+                self.stream.write_all(b"\r\n").await?;
+            }
+            Frame::Integer(val) => {
+                self.stream.write_u8(b':').await?;
+                self.write_decimal(*val).await?;
+            }
+            Frame::Null => {
+                self.stream.write_all(b"$-1\r\n").await?;
+            }
+            Frame::Bulk(val) => {
+                let len = val.len();
+
+                self.stream.write_u8(b'$').await?;
+                self.write_decimal(len as u64).await?;
+                self.stream.write_all(val).await?;
+                self.stream.write_all(b"\r\n").await?;
+            }
+            Frame::Array(_val) => unimplemented!(),
+        }
+
+        self.stream.flush().await
     }
 
     fn parse_frame(&mut self) -> Result<Option<Frame>> {
