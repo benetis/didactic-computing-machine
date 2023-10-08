@@ -5,14 +5,16 @@ use tokio::io::AsyncReadExt;
 
 struct Connection {
     stream: TcpStream,
-    buffer: BytesMut,
+    buffer: Vec<u8>,
+    cursor: usize
 }
 
 impl Connection {
     pub fn new(stream: TcpStream) -> Connection {
         Connection {
             stream,
-            buffer: BytesMut::with_capacity(4096)
+            buffer: vec![0; 4096],
+            cursor: 0,
         }
     }
 
@@ -22,12 +24,20 @@ impl Connection {
                 return Ok(Some(frame));
             }
 
-            if self.stream.read_buf(&mut self.buffer).await? == 0 {
-                return if self.buffer.is_empty() {
+            if self.buffer.len() == self.cursor {
+                self.buffer.resize(self.cursor * 2, 0);
+            }
+
+            let n_read = self.stream.read(&mut self.buffer[self.cursor..]).await?;
+
+            if n_read == 0 {
+                return if self.cursor == 0 {
                     Ok(None)
                 } else {
                     Err("connection reset by peer".into())
                 }
+            } else {
+                self.cursor += n_read;
             }
         }
     }
