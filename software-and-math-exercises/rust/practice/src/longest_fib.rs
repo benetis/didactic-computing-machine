@@ -9,6 +9,11 @@ impl LongestFib {
         let set: HashSet<_> = arr.iter().copied().collect();
 
         for i in 0..n {
+            let remaining_pairs = n - i;
+            if remaining_pairs < max_len {
+                break;
+            }
+
             for j in i + 1..n {
                 let mut x = arr[i];
                 let mut y = arr[j];
