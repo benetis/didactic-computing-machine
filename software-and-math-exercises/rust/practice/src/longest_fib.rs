@@ -1,9 +1,12 @@
+use std::collections::HashSet;
+
 pub struct LongestFib;
 
 impl LongestFib {
     pub fn calculate(arr: Vec<i32>) -> i32 {
         let n = arr.len();
         let mut max_len = 0;
+        let set: HashSet<_> = arr.iter().copied().collect();
 
         for i in 0..n {
             for j in i + 1..n {
@@ -11,19 +14,21 @@ impl LongestFib {
                 let mut y = arr[j];
                 let mut length = 2;
 
-                for &z in &arr[j + 1..] {
-                    if x + y == z {
-                        x = y;
-                        y = z;
-                        length += 1;
-                        max_len = max_len.max(length);
-                    } else if x + y < z {
-                        break;
-                    }
+                let remaining = n - j;
+                if remaining < max_len {
+                    break;
+                }
+
+                while set.contains(&(x + y)) {
+                    let next = x + y;
+                    x = y;
+                    y = next;
+                    length += 1;
+                    max_len = max_len.max(length);
                 }
             }
         }
 
-        if max_len >= 3 { max_len } else { 0 }
+        (if max_len >= 3 { max_len } else { 0 }) as i32
     }
 }
