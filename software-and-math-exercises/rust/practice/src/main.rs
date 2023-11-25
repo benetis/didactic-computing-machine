@@ -1,7 +1,8 @@
-pub mod longest_fib;
-pub mod sum_absolute_diffs;
+mod longest_fib;
+mod sum_absolute_diffs;
+mod two_sum;
 
 fn main() {
-    let res = sum_absolute_diffs::SumAbsoluteDiffs::calculate(vec![2,3,5]);
+    let res = two_sum::TwoSum::calculate(vec![3,2,4], 6);
     println!("{:?}", res);
 }
