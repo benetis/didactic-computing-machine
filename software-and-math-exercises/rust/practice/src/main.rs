@@ -1,8 +1,9 @@
 mod longest_fib;
 mod sum_absolute_diffs;
 mod two_sum;
+mod climbing_stairs;
 
 fn main() {
-    let res = two_sum::TwoSum::calculate(vec![3,2,4], 6);
+    let res = climbing_stairs::ClimbingStairs::calculate(3);
     println!("{:?}", res);
 }
