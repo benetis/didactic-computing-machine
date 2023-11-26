@@ -1,127 +1,56 @@
-use std::collections::HashSet;
+use std::collections::{HashSet, VecDeque};
 use std::fmt::Debug;
 
 pub(crate) struct BraceExpansion;
 
-
-#[derive(Debug)]
-enum Expr {
-    Letter(char),
-    Union(Vec<Expr>),
-    Concat(Box<Expr>, Box<Expr>),
-}
-
 impl BraceExpansion {
     pub fn calculate(expression: String) -> Vec<String> {
-        let expr = Self::parse(expression.as_str());
-        let res = Self::result(expr);
+        let mut results = HashSet::new();
+        let mut queue = VecDeque::new();
+        queue.push_back(expression);
 
-        let unique_set: HashSet<_> = res.into_iter().collect();
-        let mut unique_vec: Vec<_> = unique_set.into_iter().collect();
-
-        unique_vec.sort();
-
-        unique_vec
-
-    }
-
-    fn result(expr: Expr) -> Vec<String> {
-        match expr {
-            Expr::Letter(c) => {
-                vec![c.to_string()]
-            }
-            Expr::Union(exprs) => {
-                let mut results = Vec::new();
-                for sub in exprs {
-                    results.extend(Self::result(sub));
+        while let Some(current) = queue.pop_front() {
+            if let Some((left_brace_index, right_brace_index)) = Self::find_braces(&current) {
+                let (prefix, parts, suffix) = Self::split_expression(&current, left_brace_index, right_brace_index);
+                for part in parts {
+                    queue.push_back(format!("{}{}{}", prefix, part, suffix));
                 }
-                results
-            }
-            Expr::Concat(expr1, expr2) => {
-                let results1 = Self::result(*expr1);
-                let results2 = Self::result(*expr2);
-
-                results1.iter()
-                    .flat_map(|res1| {
-                        results2.iter()
-                            .map(|res2| {
-                                format!("{}{}", res1, res2)
-                            })
-                            .collect::<Vec<String>>()
-                    })
-                    .collect::<Vec<String>>()
+            } else {
+                results.insert(current);
             }
         }
+
+        Self::sort_results(results)
     }
 
-    fn parse(str: &str) -> Expr {
-        if let Some(expr) = Self::parse_concat(str) {
-            return expr;
-        }
+    fn find_braces(expression: &str) -> Option<(usize, usize)> {
+        let mut left_brace_index = None;
+        let mut right_brace_index = 0;
 
-        if let Some(expr) = Self::parse_union(str) {
-            return expr;
-        }
-
-        Expr::Letter(str.chars().nth(0).unwrap())
-    }
-
-    fn parse_concat(expr: &str) -> Option<Expr> {
-        // letter{
-        // }{
-        // }letter
-
-        let chars: Vec<char> = expr.chars().collect();
-        let mut brace_level = 0;
-        for (i, &c) in chars.iter().enumerate() {
-            match c {
-                '{' => {
-                    if brace_level == 0 && i > 0 {
-                        return Some(Expr::Concat(
-                            Box::new(Self::parse(&expr[..i])),
-                            Box::new(Self::parse(&expr[i..])),
-                        ));
-                    }
-                    brace_level += 1;
+        for (index, character) in expression.chars().enumerate() {
+            match character {
+                '{' => left_brace_index = Some(index),
+                '}' if left_brace_index.is_some() => {
+                    right_brace_index = index;
+                    break;
                 }
-                '}' => brace_level -= 1,
                 _ => {}
             }
         }
 
-        None
+        left_brace_index.map(|left| (left, right_brace_index))
     }
 
-    fn parse_union(expr: &str) -> Option<Expr> {
-        if !expr.starts_with('{') || !expr.ends_with('}') {
-            return None;
-        }
+    fn split_expression(expression: &str, left_brace_index: usize, right_brace_index: usize) -> (&str, Vec<&str>, &str) {
+        let prefix = &expression[..left_brace_index];
+        let parts = expression[left_brace_index + 1..right_brace_index].split(',').collect();
+        let suffix = &expression[right_brace_index + 1..];
+        (prefix, parts, suffix)
+    }
 
-        let mut brace_level = 0;
-        let mut cursor = 1;
-        let mut parts = Vec::new();
-
-        for (i, c) in expr[1..expr.len() - 1].chars().enumerate() {
-            match c {
-                '{' => brace_level += 1,
-                '}' => brace_level -= 1,
-                ',' if brace_level == 0 => {
-                    parts.push(&expr[cursor..i + 1]);
-                    cursor = i + 2;
-                },
-                _ => {}
-            }
-        }
-
-        if brace_level == 0 && !parts.is_empty() {
-            parts.push(&expr[cursor..expr.len() - 1]);
-
-            let parsed_parts = parts.into_iter()
-                .map(|part| Self::parse(part))
-                .collect();
-            Some(Expr::Union(parsed_parts))
-        } else {
-            None
-        }
+    fn sort_results(results: HashSet<String>) -> Vec<String> {
+        let mut sorted_results = results.into_iter().collect::<Vec<String>>();
+        sorted_results.sort();
+        sorted_results
     }
 }
