@@ -5,6 +5,6 @@ mod climbing_stairs;
 mod brace_expansion;
 
 fn main() {
-    let res = climbing_stairs::ClimbingStairs::calculate(3);
+    let res = brace_expansion::BraceExpansion::calculate("{b,c}".to_string());
     println!("{:?}", res);
 }

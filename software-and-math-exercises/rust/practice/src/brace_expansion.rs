@@ -1,22 +1,13 @@
-struct BraceExpansion;
+use std::fmt::Debug;
+
+pub(crate) struct BraceExpansion;
 
 
+#[derive(Debug)]
 enum Expr {
     Letter(char),
-    Union(Vec<Expr>),
-    Concat(Vec<Expr>)
-}
-
-enum Token {
-    Letter(char),
-    OpenBrace,
-    CloseBrace,
-    Comma
-}
-
-enum AstHelper {
-    Union,
-    Concat
+    Union(Box<Expr>, Box<Expr>),
+    Concat(Box<Expr>, Box<Expr>),
 }
 
 impl BraceExpansion {
@@ -24,65 +15,47 @@ impl BraceExpansion {
         // letters R{"w"} -> "w"
         // {a,b} -> results in union set {"a", "b"}
         // {a,{b,c}} -> results in union set {"a", "b", "c"}
+        // {a,{b,c}{a,d}{z,b}} -> results in union set {"a", "b", "c"}
         // a{b,c}{d,e}f{g,h} -> {"abdfg", "abdfh", "abefg", "abefh", "acdfg", "acdfh", "acefg", "acefh"}
+
+        let exprs = vec![
+            "{a,b}",
+            "a",
+            "{a,{b,c}}",
+        ];
+        let res =
+            exprs.iter().for_each(|expr| {
+                let expr = Self::parse(expr);
+                println!("{:?}", expr);
+            });
 
         vec![] //sorted list
     }
 
-    fn lex(input: &str) -> Vec<Token> {
-        let mut tokens = vec![];
-
-        for c in input.chars() {
-            match c {
-                '{' => tokens.push(Token::OpenBrace),
-                '}' => tokens.push(Token::CloseBrace),
-                ',' => tokens.push(Token::Comma),
-                _ => tokens.push(Token::Letter(c))
-            }
+    fn parse(str: &str) -> Expr {
+        if let Some(expr) = Self::parse_union(str) {
+            return expr;
         }
 
-        tokens
+        // if let Some(expr) = Self::parse_concat(str) {
+        //     return expr;
+        // }
+
+        Expr::Letter(str.chars().nth(0).unwrap())
     }
 
-    fn parse(tokens: Vec<Token>) -> Expr {
-        let mut stack = vec![];
-        let mut helper_stack = vec![];
-
-        for (index, token) in tokens.iter().enumerate() {
-            match token {
-                Token::Letter(c) => {
-                    stack.push(Expr::Letter(*c));
-                }
-                Token::OpenBrace => {
-
-                    if let Some(&previous_token) = tokens.get(index - 1) {
-                        if BraceExpansion::is_concat(&previous_token) {
-                            helper_stack.push(AstHelper::Concat);
-                        } else {
-                            helper_stack.push(AstHelper::Union);
-                        }
-                    }
-
-                }
-                Token::CloseBrace => {
-                    let Some(helper) = helper_stack.pop();
-
-
-                }
-                Token::Comma => {}
-            }
+    fn parse_union(expr: &str) -> Option<Expr> {
+        if !expr.starts_with('{') || !expr.chars().nth(1).unwrap().is_alphabetic() {
+            return None;
         }
 
-        Expr::Letter('a')
+        expr.find(',')
+            .map(|i| {
+                let (left, right) = expr.split_at(i);
+                Expr::Union(
+                    Box::new(Self::parse(&left[1..])),
+                    Box::new(Self::parse(&right[1..right.len() - 1])),
+                )
+            })
     }
-
-    fn is_concat(previous_token: &Token) -> bool {
-        match previous_token {
-            Token::Letter(_) => true,
-            Token::CloseBrace => true,
-            _ => false
-        }
-    }
-
-
 }
