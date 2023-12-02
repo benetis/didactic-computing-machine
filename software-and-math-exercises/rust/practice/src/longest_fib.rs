@@ -1,3 +1,4 @@
+#![allow(warnings)]
 use std::collections::HashSet;
 
 pub struct LongestFib;

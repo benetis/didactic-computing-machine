@@ -1,3 +1,4 @@
+#![allow(warnings)]
 pub struct SumAbsoluteDiffs;
 
 impl SumAbsoluteDiffs {
