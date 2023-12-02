@@ -12,25 +12,73 @@ enum CubeAmount {
 pub fn run() {
     let input = load_input();
 
-    let games_satisfy_constraint: Vec<Option<i32>> = input.iter().map(|x| {
-        let (game_num, subsets) = game_subsets(x.to_string());
-        if check_constraint(subsets) {
-            Some(game_num)
-        } else {
-            None
-        }
-    }).collect();
+    // let games_satisfy_constraint: Vec<Option<i32>> = input.iter().map(|x| {
+    //     let (game_num, subsets) = game_subsets(x.to_string());
+    //     if check_constraint(subsets) {
+    //         Some(game_num)
+    //     } else {
+    //         None
+    //     }
+    // }).collect();
 
-    let sum = games_satisfy_constraint.iter().fold(0, |acc, curr| {
-        match curr {
-            Some(v) => acc + v,
-            None => acc,
-        }
+    let games_power_values = input.iter().map(|game| {
+        let (_, subsets) = game_subsets(game.to_string());
+        let constraints = find_minimum_constraints(subsets);
+
+        power_value(constraints)
+    }).collect::<Vec<i64>>();
+
+    let sum = games_power_values.iter().fold(0, |acc, curr| {
+        acc + *curr
     });
 
     println!("{}", sum);
 
 
+}
+
+fn power_value(game: Vec<CubeAmount>) -> i64 {
+    game.iter().fold(1, |acc, curr| {
+        acc * match curr {
+            CubeAmount::Blue(v) => *v as i64,
+            CubeAmount::Red(v) => *v as i64,
+            CubeAmount::Green(v) => *v as i64,
+        }
+    })
+}
+
+fn find_minimum_constraints(game: Vec<Vec<CubeAmount>>) -> Vec<CubeAmount> {
+    let mut min_red = 0;
+    let mut min_green = 0;
+    let mut min_blue = 0;
+
+    game.iter().for_each(|subset| {
+        subset.iter().for_each(|cube| {
+            match cube {
+                CubeAmount::Blue(v) => {
+                    if min_blue < *v {
+                        min_blue = *v;
+                    }
+                }
+                CubeAmount::Red(v) => {
+                    if min_red < *v {
+                        min_red = *v;
+                    }
+                }
+                CubeAmount::Green(v) => {
+                    if min_green < *v {
+                        min_green = *v;
+                    }
+                }
+            }
+        })
+    });
+
+    vec![
+        CubeAmount::Blue(min_blue),
+        CubeAmount::Red(min_red),
+        CubeAmount::Green(min_green),
+    ]
 }
 
 fn check_constraint(game: Vec<Vec<CubeAmount>>) -> bool {
