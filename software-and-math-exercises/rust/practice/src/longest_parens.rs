@@ -3,61 +3,39 @@ pub struct Solution {}
 impl Solution {
     pub fn longest_valid_parentheses(s: String) -> i32 {
         let mut max = 0;
-        let mut current = 0;
-        let mut last_pop: Option<usize> = None;
-        let mut stack: Vec<usize> = Vec::new();
-        let mut chars: Vec<char> = s.chars().collect();
+        let mut positions = Vec::new();
         let mut cursor = 0;
+        let mut start = 0;
 
-        while cursor < chars.len() {
-            match chars.iter().nth(cursor).unwrap() {
-                '(' => {
-                    stack.push(cursor);
-                    current += 1;
-                    cursor += 1;
-                }
+        while cursor < s.len() {
+            let c = s.chars().nth(cursor).unwrap();
+
+            match c {
+                '(' => positions.push(cursor),
                 ')' => {
-                    match stack.pop() {
-                        None => {
-                            match last_pop {
-                                None => {
-                                    cursor += 1;
-                                }
-                                Some(v) => {
-                                    if cursor + 2 < chars.len() {
-                                        cursor = v;
-                                    }
-                                    last_pop = None;
-                                }
-                            }
+                    if positions.is_empty() {
+                        start = cursor + 1;
+                    } else {
+                        positions.pop();
 
-                            if current > max {
-                                max = current;
-                            }
-                            current = 0;
-                        }
-                        Some(_) => {
-                            last_pop = Some(cursor);
-                            current += 1;
-                            cursor += 1;
+                        if positions.is_empty() {
+                            max = max.max(cursor - start + 1);
+                        } else {
+                            let last = *positions.last().unwrap();
+                            max = max.max(cursor - last);
                         }
                     }
                 }
-                _ => panic!("Only () accepted as input")
+                _ => {}
             }
-        }
-
-        current = current - stack.len();
-
-        if current > max {
-            max = current;
+            cursor += 1;
         }
 
         max as i32
     }
 
     pub fn run() {
-        let input = String::from("");
+        let input = String::from(")()())");
         let output = Solution::longest_valid_parentheses(input);
         println!("{:?}", output);
     }
