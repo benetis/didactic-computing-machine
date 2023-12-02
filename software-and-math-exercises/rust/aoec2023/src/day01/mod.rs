@@ -1,4 +1,5 @@
-pub mod input;
+#![allow(warnings)]
+mod input;
 
 use regex::Regex;
 use crate::day01::input::load_input;

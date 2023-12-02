@@ -1,4 +1,5 @@
-pub mod input;
+#![allow(warnings)]
+mod input;
 
 use crate::day02::input::load_input;
 
