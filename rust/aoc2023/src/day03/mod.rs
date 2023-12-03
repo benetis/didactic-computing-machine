@@ -24,6 +24,7 @@ impl Point {
     }
 }
 
+#[derive(Debug, Clone, Eq, PartialEq, Hash)]
 struct FullNum {
     digits: u32,
     start: Point,
@@ -45,11 +46,22 @@ pub fn run() {
     let max_y = input.len() as u32;
     let max_x = input.iter().last().unwrap().len() as u32;
 
-    let result_digits = numbers_gazetteer.iter().filter_map(|digits| {
-        symbol_points.iter()
-            .flat_map(|p| p.neighbours(max_x, max_y))
-            .find(|p| digits.point_in_range(p))
-            .map(|_| digits.digits)
+    let result_digits = symbol_points.iter().flat_map(|symbol_point| {
+        let neighbours = symbol_point.neighbours(max_x, max_y);
+        let mut found_nums = Vec::new();
+
+        for num in numbers_gazetteer.iter() {
+            if neighbours.iter().any(|neighbour| num.point_in_range(neighbour)) {
+                found_nums.push(num);
+                if found_nums.len() > 2 { break; }
+            }
+        }
+
+        if found_nums.len() == 2 {
+            Some(found_nums[0].digits * found_nums[1].digits)
+        } else {
+            None
+        }
     }).collect::<Vec<u32>>();
 
     let sum = result_digits.iter().sum::<u32>();
@@ -73,7 +85,7 @@ fn build_search_space(input: &Vec<String>) -> (Vec<FullNum>, Vec<Point>) {
         numbers_gazetteer.extend(line_nums);
 
         for (x, c) in line.chars().enumerate() {
-            if c != '.' && !c.is_ascii_digit() {
+            if c == '*' {
                 symbol_points.push(Point { x: x as u32, y: y as u32 });
             }
         }
