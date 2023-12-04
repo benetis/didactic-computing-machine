@@ -1,9 +1,10 @@
+use std::collections::VecDeque;
 use regex::Regex;
 use crate::input::load_input;
 
 #[derive(Debug)]
 struct Card {
-    index: i32,
+    index: usize,
     winning_numbers: Vec<i32>,
     my_numbers: Vec<i32>,
 }
@@ -11,18 +12,24 @@ struct Card {
 pub fn run() {
     let input = load_input("04");
     let cards = read_game(input);
+    let card_map = cards.iter().map(|x| (x.index, x)).collect::<Vec<(usize, &Card)>>();
 
-    let sum = cards.iter().fold(0, |acc, curr| {
-        acc + double_points_on_each_match(matching_nums(curr))
-    });
+    let mut left_cards = VecDeque::new();
+    let mut total_cards = cards.len();
+    left_cards.extend(cards.iter());
 
-    println!("{:?}", sum);
-}
-fn double_points_on_each_match(numbers: Vec<i32>) -> i64 {
-    match numbers.len() {
-        0 => 0,
-        num => 2_i32.pow((num - 1) as u32) as i64
+    while let Some(card) = left_cards.pop_front() {
+        let matching_nums = matching_nums(card);
+        let duplicate_cards = matching_nums.iter().enumerate().map(|(index, _)| {
+            return card_map.get(card.index + index).unwrap().1.clone();
+        }).collect::<Vec<&Card>>();
+
+        let len = duplicate_cards.len();
+        total_cards += len;
+        left_cards.extend(duplicate_cards);
     }
+
+    println!("{}", total_cards);
 }
 
 fn matching_nums(card: &Card) -> Vec<i32> {
@@ -37,7 +44,7 @@ fn read_card(str: &str) -> Card {
     let re = Regex::new(r"Card\s+(\d+): ([\d\s]+)\|([\d\s]+)").unwrap();
 
     if let Some(caps) = re.captures(str) {
-        let index = caps.get(1).unwrap().as_str().parse::<i32>().unwrap();
+        let index = caps.get(1).unwrap().as_str().parse::<usize>().unwrap();
         let winning_numbers = read_numbers(caps.get(2).unwrap().as_str());
         let my_numbers = read_numbers(caps.get(3).unwrap().as_str());
 
