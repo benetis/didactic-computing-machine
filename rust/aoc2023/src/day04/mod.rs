@@ -1,3 +1,4 @@
+#![allow(warnings)]
 use std::collections::VecDeque;
 use regex::Regex;
 use crate::input::load_input;

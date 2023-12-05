@@ -1,3 +1,4 @@
+#![allow(warnings)]
 use regex::Regex;
 use crate::input::load_input;
 
