@@ -1,7 +1,9 @@
 use std::collections::{HashMap, VecDeque};
 use std::fmt::Display;
+use std::sync::atomic::AtomicUsize;
 use regex::Regex;
 use crate::input::load_input;
+use rayon::prelude::*;
 
 #[derive(Debug, Clone)]
 struct Map {
@@ -27,79 +29,32 @@ struct ConversionBreadcrumbs {
 type RangeLen = i64;
 type RangeStart = i64;
 
-#[derive(Debug, Clone)]
-struct Seed {
-    value: i64,
-    applied_conversions: Vec<(Conversion, ConversionBreadcrumbs)>,
-}
-
-impl Seed {
-    pub fn apply_conversion(&mut self, offset: i64, conversion: Conversion, debug_info: String) {
-        // let before = self.value;
-        self.value += offset;
-        // let breadcrumbs = ConversionBreadcrumbs {
-        //     before,
-        //     after: self.value,
-        //     debug_info,
-        // };
-        // self.applied_conversions.push((conversion, breadcrumbs));
-    }
-}
+type Seed = i64;
 
 pub fn run() {
     let input = load_input("05");
+    // Big input, optimise for bruteforce all 2.1B seeds approach
     let seed_ranges = parse_seed_ranges(input.iter().nth(0).unwrap());
-    let seed_values = seed_ranges.iter().flat_map(|range| expand_seeds(*range)).collect::<Vec<i64>>();
+    let seeds = seed_ranges.par_iter().flat_map(|range| expand_seeds(*range)).collect::<Vec<i64>>();
 
-    let total_seeds = seed_values.len();
+    let total_seeds = seeds.len();
     println!("Total seeds: {:#?}", total_seeds);
-
-    let seeds = seed_values.iter().map(|seed| Seed {
-        value: *seed,
-        applied_conversions: vec![],
-    }).collect::<Vec<Seed>>();
 
     let input_maps = parse_input_maps(input);
     let input_hash = build_map(input_maps);
+    let counter = AtomicUsize::new(0);
 
-    let results = seeds.iter().enumerate().map(|(index, seed)| {
-        if index % 100000 == 0 {
-            println!("Processing seed {}/{}", index, total_seeds);
+    let results: Vec<Seed> = seeds.par_iter().enumerate().map(|(index, seed)| {
+        if index % 1000000 == 0 {
+            counter.fetch_add(1000000, std::sync::atomic::Ordering::SeqCst);
+            println!("{} / {}", counter.load(std::sync::atomic::Ordering::SeqCst), total_seeds);
         }
-        convert_maps(seed, &input_hash)
-    }).collect::<Vec<Seed>>();
+        convert_maps(&seed, &input_hash)
+    }).collect();
 
-    println!("{:#?}", results);
-
-    let min = results.iter().map(|seed| seed.value).min().unwrap();
+    let min = results.par_iter().min_by(|a, b| a.cmp(&b)).unwrap();
 
     println!("{}", min);
-}
-
-fn parse_input_maps(input: Vec<String>) -> Vec<Map> {
-    let mut input_maps = Vec::new();
-    let mut last_header = None;
-    let mut last_conversions = vec![];
-
-    for row in input.iter().skip(2) {
-        if last_header.is_none() {
-            last_header = Some(parse_map_header(row));
-            continue;
-        }
-
-        if row == "" {
-            input_maps.push(Map {
-                conversions: last_conversions,
-                from: last_header.unwrap().0.to_string(),
-                to: last_header.unwrap().1.to_string(),
-            });
-            last_header = None;
-            last_conversions = vec![];
-        } else {
-            last_conversions.push(parse_conversion(row));
-        }
-    }
-    input_maps
 }
 
 fn convert_maps(seed: &Seed, input_hash: &HashMap<String, Map>) -> Seed {
@@ -122,14 +77,13 @@ fn convert_maps(seed: &Seed, input_hash: &HashMap<String, Map>) -> Seed {
 
 fn convert_seed(seed: &Seed, map: &Map) -> Seed {
     let mut result = seed.clone();
-    let debug_info = format!("{} -> {}", map.from, map.to);
 
     for conversion in map.conversions.iter() {
         let offset = conversion.destination_start - conversion.source_start;
         let input_range = conversion.source_start..(conversion.source_start + conversion.range_len);
 
-        if input_range.contains(&seed.value) {
-            result.apply_conversion(offset, conversion.clone(), debug_info.clone());
+        if input_range.contains(&seed) {
+            result += offset;
         }
     }
 
@@ -192,7 +146,7 @@ fn parse_conversion(input: &str) -> Conversion {
     }
 }
 
-fn build_map<'i>(input_maps: Vec<Map>) -> HashMap<String, Map> {
+fn build_map(input_maps: Vec<Map>) -> HashMap<String, Map> {
     let mut input_hash = HashMap::new();
 
     for map in input_maps.iter() {
@@ -200,4 +154,30 @@ fn build_map<'i>(input_maps: Vec<Map>) -> HashMap<String, Map> {
     }
 
     input_hash
+}
+
+fn parse_input_maps(input: Vec<String>) -> Vec<Map> {
+    let mut input_maps = Vec::new();
+    let mut last_header = None;
+    let mut last_conversions = vec![];
+
+    for row in input.iter().skip(2) {
+        if last_header.is_none() {
+            last_header = Some(parse_map_header(row));
+            continue;
+        }
+
+        if row == "" {
+            input_maps.push(Map {
+                conversions: last_conversions,
+                from: last_header.unwrap().0.to_string(),
+                to: last_header.unwrap().1.to_string(),
+            });
+            last_header = None;
+            last_conversions = vec![];
+        } else {
+            last_conversions.push(parse_conversion(row));
+        }
+    }
+    input_maps
 }
