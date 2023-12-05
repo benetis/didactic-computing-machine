@@ -24,6 +24,9 @@ struct ConversionBreadcrumbs {
     debug_info: String,
 }
 
+type RangeLen = i64;
+type RangeStart = i64;
+
 #[derive(Debug, Clone)]
 struct Seed {
     value: i64,
@@ -32,26 +35,48 @@ struct Seed {
 
 impl Seed {
     pub fn apply_conversion(&mut self, offset: i64, conversion: Conversion, debug_info: String) {
-        let before = self.value;
+        // let before = self.value;
         self.value += offset;
-        let breadcrumbs = ConversionBreadcrumbs {
-            before,
-            after: self.value,
-            debug_info,
-        };
-        self.applied_conversions.push((conversion, breadcrumbs));
+        // let breadcrumbs = ConversionBreadcrumbs {
+        //     before,
+        //     after: self.value,
+        //     debug_info,
+        // };
+        // self.applied_conversions.push((conversion, breadcrumbs));
     }
 }
 
 pub fn run() {
     let input = load_input("05");
-    let seed_values = parse_seeds(input.iter().nth(0).unwrap());
+    let seed_ranges = parse_seed_ranges(input.iter().nth(0).unwrap());
+    let seed_values = seed_ranges.iter().flat_map(|range| expand_seeds(*range)).collect::<Vec<i64>>();
+
+    let total_seeds = seed_values.len();
+    println!("Total seeds: {:#?}", total_seeds);
+
     let seeds = seed_values.iter().map(|seed| Seed {
         value: *seed,
         applied_conversions: vec![],
     }).collect::<Vec<Seed>>();
 
+    let input_maps = parse_input_maps(input);
+    let input_hash = build_map(input_maps);
 
+    let results = seeds.iter().enumerate().map(|(index, seed)| {
+        if index % 100000 == 0 {
+            println!("Processing seed {}/{}", index, total_seeds);
+        }
+        convert_maps(seed, &input_hash)
+    }).collect::<Vec<Seed>>();
+
+    println!("{:#?}", results);
+
+    let min = results.iter().map(|seed| seed.value).min().unwrap();
+
+    println!("{}", min);
+}
+
+fn parse_input_maps(input: Vec<String>) -> Vec<Map> {
     let mut input_maps = Vec::new();
     let mut last_header = None;
     let mut last_conversions = vec![];
@@ -74,28 +99,13 @@ pub fn run() {
             last_conversions.push(parse_conversion(row));
         }
     }
-
-    let results = seeds.iter().map(|seed| {
-        convert_maps(seed, input_maps.as_ref())
-    }).collect::<Vec<Seed>>();
-
-    println!("{:#?}", results);
-
-    let min = results.iter().map(|seed| seed.value).min().unwrap();
-
-    println!("{}", min);
+    input_maps
 }
 
-fn convert_maps(seed: &Seed, maps: &Vec<Map>) -> Seed {
-    let mut hash = HashMap::new();
-
-    for map in maps.iter() {
-        hash.insert(map.from.clone(), map);
-    }
-
+fn convert_maps(seed: &Seed, input_hash: &HashMap<String, Map>) -> Seed {
     let mut result = seed.clone();
     let mut follow = VecDeque::new();
-    follow.push_back(hash.get("seed").unwrap());
+    follow.push_back(input_hash.get("seed").unwrap());
 
     while let Some(map) = follow.pop_front() {
         result = convert_seed(&result, &map);
@@ -104,7 +114,7 @@ fn convert_maps(seed: &Seed, maps: &Vec<Map>) -> Seed {
             return result;
         }
 
-        follow.push_back(hash.get(map.to.as_str()).unwrap());
+        follow.push_back(input_hash.get(map.to.as_str()).unwrap());
     }
 
     result
@@ -126,7 +136,15 @@ fn convert_seed(seed: &Seed, map: &Map) -> Seed {
     result
 }
 
-fn parse_seeds(input: &str) -> Vec<i64> {
+fn expand_seeds(range: (RangeStart, RangeLen)) -> Vec<i64> {
+    println!("Expanding range: {}", range.1);
+    let end = range.0 + range.1;
+    let mut result = Vec::with_capacity(range.1 as usize);
+    result.extend(range.0..end);
+    result
+}
+
+fn parse_seed_ranges(input: &str) -> Vec<(RangeStart, RangeLen)> {
     let re = Regex::new(r"seeds: ([\d\s]+)").unwrap();
 
     if let Some(caps) = re.captures(input) {
@@ -136,7 +154,15 @@ fn parse_seeds(input: &str) -> Vec<i64> {
             .split(" ")
             .map(|x| x.parse::<i64>()
                 .unwrap())
-            .collect::<Vec<i64>>();
+            .collect::<Vec<i64>>()
+            .chunks(2)
+            .map(|chunk| {
+                match chunk {
+                    [a, b] => (*a, *b),
+                    _ => panic!("Invalid input")
+                }
+            })
+            .collect::<Vec<(i64, i64)>>();
         seeds
     } else {
         panic!("Invalid input");
@@ -164,4 +190,14 @@ fn parse_conversion(input: &str) -> Conversion {
         source_start: nums[1],
         range_len: nums[2],
     }
+}
+
+fn build_map<'i>(input_maps: Vec<Map>) -> HashMap<String, Map> {
+    let mut input_hash = HashMap::new();
+
+    for map in input_maps.iter() {
+        input_hash.insert(map.from.to_string(), map.clone());
+    }
+
+    input_hash
 }
