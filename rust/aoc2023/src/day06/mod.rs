@@ -1,15 +1,14 @@
-
 use regex::Regex;
 use crate::input::load_input;
 
 
 #[derive(Debug)]
 struct Race {
-    duration: i32,
-    record: i32
+    duration: i64,
+    record: i64,
 }
 
-type NumberOfWaysToBeatRecord = i32;
+type NumberOfWaysToBeatRecord = i64;
 
 pub fn run() {
     let input = load_input("06");
@@ -24,14 +23,14 @@ pub fn run() {
 
 fn race(race: &Race) -> NumberOfWaysToBeatRecord {
     let possible_races = 1..race.duration;
-    let winning_races: Vec<i32> = possible_races.filter(|hold_value| {
+    let winning_races: Vec<i64> = possible_races.filter(|hold_value| {
         is_winning(hold_value, race.duration, race.record)
     }).collect();
 
-    winning_races.len() as i32
+    winning_races.len() as i64
 }
 
-fn is_winning(speed: &i32, duration: i32, record: i32) -> bool {
+fn is_winning(speed: &i64, duration: i64, record: i64) -> bool {
     let left = duration - speed;
     let traveled = left * speed;
     traveled > record
@@ -53,12 +52,13 @@ fn parse_input(input: Vec<String>) -> Vec<Race> {
         .collect::<Vec<Race>>()
 }
 
-fn parse_row(str: &str) -> Vec<i32> {
-    str.split(":")
+fn parse_row(str: &str) -> Vec<i64> {
+    vec![str.split(":")
         .nth(1)
         .unwrap()
-        .split(" ")
-        .filter(|x| x != &"")
-        .map(|x| x.trim().parse::<i32>().unwrap())
-        .collect::<Vec<i32>>()
+        .replace(" ", "")
+        .trim()
+        .parse::<i64>()
+        .unwrap()
+    ]
 }
