@@ -1,3 +1,4 @@
+#![allow(warnings)]
 use std::collections::{HashMap, VecDeque};
 use std::fmt::Display;
 use std::sync::atomic::AtomicUsize;
