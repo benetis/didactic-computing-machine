@@ -6,7 +6,7 @@ use crate::input::load_input;
 use itertools::Itertools;
 use strum_macros::Display;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Hash, Eq)]
 struct Card {
     name: String,
 }
@@ -23,10 +23,14 @@ impl Card {
             "A" => 14,
             "K" => 13,
             "Q" => 12,
-            "J" => 11,
             "T" => 10,
+            "J" => 1,
             _ => self.name.parse::<i64>().unwrap()
         }
+    }
+
+    fn is_joker(&self) -> bool {
+        self.name == "J"
     }
 }
 
@@ -85,7 +89,12 @@ impl fmt::Display for Game {
 
 impl Game {
     pub fn best_hand(&self) -> Hand {
-        let groups: Vec<Vec<Card>> = self.group_by_name();
+        let groups: Vec<Vec<Card>> = self
+            .group_by_name();
+
+        if self.cards.iter().filter(|x| x.is_joker()).count() == 5 {
+            return Hand::FiveOfAKind;
+        }
 
         match groups.len() {
             1 => Hand::FiveOfAKind,
@@ -117,10 +126,22 @@ impl Game {
 
     fn group_by_name(&self) -> Vec<Vec<Card>> {
         self.cards.clone().into_iter()
+            .flat_map(|card| {
+                if card.is_joker() {
+                    //duplicate all cards instead of joker
+                    self.cards.iter()
+                        .unique()
+                        .filter(|x| !x.is_joker())
+                        .map(|x| x.clone())
+                        .collect::<Vec<Card>>()
+                } else {
+                    vec![card]
+                }
+            })
             .sorted_by(|a, b| a.name.cmp(&b.name))
             .group_by(|card| card.name.clone())
             .into_iter()
-            .map(|(_, group)| group.collect::<Vec<Card>>())
+            .map(|(str, group)| group.collect::<Vec<Card>>())
             .collect()
     }
 }
@@ -133,8 +154,6 @@ pub fn run() {
         .map(|x| (x, x.best_hand())).collect::<Vec<(&Game, Hand)>>();
 
     let total_games = input.len();
-
-    // best_hands.iter().for_each(|x| println!("{} {}", x.0, x.1));
 
     let winning_sort =
         best_hands.iter()
@@ -164,6 +183,7 @@ pub fn run() {
 
     println!("{:?}", winning_bids);
     println!("{:#?}", sum);
+    //249776650
 }
 
 fn parse_game(str: &str) -> Game {
