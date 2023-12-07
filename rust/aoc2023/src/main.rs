@@ -5,7 +5,8 @@ pub mod input;
 mod day04;
 mod day05;
 mod day06;
+mod day07;
 
 fn main() {
-    day06::run();
+    day07::run();
 }
