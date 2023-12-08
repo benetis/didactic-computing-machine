@@ -1,6 +1,7 @@
 use std::collections::{HashMap, VecDeque};
 use regex::Regex;
 use crate::input::load_input;
+
 #[derive(Debug)]
 enum Instruction {
     Right,
@@ -17,24 +18,36 @@ pub fn run() {
 
     let (instructions_input, mappings) = parse_input(input);
 
-    let mut instructions = instructions_input.iter().cycle();
+    let mut next_paths = mappings
+        .keys()
+        .into_iter()
+        .filter(|x| x.0.ends_with("A"))
+        .collect::<Vec<&Node>>()
+        .clone();
 
-    let mut result = Node("AAA".to_string());
+    let mut instructions = instructions_input.iter().cycle();
     let mut total = 0;
 
-    while result != Node("ZZZ".to_string()) {
+    while !check_if_all_paths_on_z(&next_paths) {
         let next = instructions.next().unwrap();
-
-        let (left, right) = mappings.get(&result).unwrap();
-
-        match next {
-            Instruction::Right => result = right.clone(),
-            Instruction::Left => result = left.clone(),
-        }
         total += 1;
+
+        next_paths = next_paths.iter().map(|node| {
+            let (left, right) = mappings.get(&node).unwrap();
+
+            match next {
+                Instruction::Right => right,
+                Instruction::Left => left,
+            }
+
+        }).collect::<Vec<&Node>>();
     }
 
     println!("Total iterations {}", total);
+}
+
+fn check_if_all_paths_on_z(paths: &Vec<&Node>) -> bool {
+    paths.iter().all(|x| x.0.ends_with("Z"))
 }
 
 fn parse_input(input: Vec<String>) -> (Vec<Instruction>, HashMap<Node, (Node, Node)>) {
@@ -68,10 +81,10 @@ fn parse_instructions(input: &str) -> Vec<Instruction> {
     input.chars()
         .filter(|c| c != &' ')
         .map(|c| {
-        match c {
-            'R' => Instruction::Right,
-            'L' => Instruction::Left,
-            a => panic!("Unknown instruction {}", a)
-        }
-    }).collect()
+            match c {
+                'R' => Instruction::Right,
+                'L' => Instruction::Left,
+                a => panic!("Unknown instruction {}", a)
+            }
+        }).collect()
 }
