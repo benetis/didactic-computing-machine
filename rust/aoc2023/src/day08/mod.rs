@@ -1,8 +1,10 @@
+#![allow(warnings)]
 use std::collections::{HashMap, VecDeque};
 use regex::Regex;
 use crate::input::load_input;
 
 #[derive(Debug)]
+#[derive(Clone, Copy)]
 enum Instruction {
     Right,
     Left,
@@ -16,34 +18,48 @@ type Mappings = HashMap<Node, (Node, Node)>;
 pub fn run() {
     let input = load_input("08");
 
-    let (instructions_input, mappings) = parse_input(input);
+    let (instructions, mappings) = parse_input(input);
 
-    let mut next_paths = mappings
+    let start = mappings
         .keys()
         .into_iter()
         .filter(|x| x.0.ends_with("A"))
         .collect::<Vec<&Node>>()
         .clone();
 
-    let mut instructions = instructions_input.iter().cycle();
-    let mut total = 0;
+    let cycles = start
+        .iter()
+        .map(|x| find_cycle((*x).clone(), instructions.clone(), &mappings))
+        .collect::<Vec<i64>>()
+        .clone();
 
-    while !check_if_all_paths_on_z(&next_paths) {
-        let next = instructions.next().unwrap();
-        total += 1;
+    println!("Cycles: {:#?}", cycles);
 
-        next_paths = next_paths.iter().map(|node| {
-            let (left, right) = mappings.get(&node).unwrap();
+    let lcm = cycles.iter().fold(1, |acc, x| lcm(acc, *x));
 
-            match next {
-                Instruction::Right => right,
-                Instruction::Left => left,
+    println!("LCM: {:#?}", lcm);
+}
+
+fn find_cycle(current: Node, instructions: Vec<Instruction>, mappings: &Mappings) -> i64 {
+    instructions.iter()
+        .cycle()
+        .scan(current, |state, inst| {
+            let next = mappings.get(state).unwrap();
+            *state = match inst {
+                Instruction::Right => next.1.clone(),
+                Instruction::Left => next.0.clone(),
+            };
+            Some((state.clone(), state.0.ends_with("Z")))
+        })
+        .enumerate()
+        .find_map(|(index, (node, is_end))| {
+            if is_end {
+                Some((index + 1) as i64)
+            } else {
+                None
             }
-
-        }).collect::<Vec<&Node>>();
-    }
-
-    println!("Total iterations {}", total);
+        })
+        .unwrap_or_else(|| panic!("No cycle found"))
 }
 
 fn check_if_all_paths_on_z(paths: &Vec<&Node>) -> bool {
@@ -87,4 +103,16 @@ fn parse_instructions(input: &str) -> Vec<Instruction> {
                 a => panic!("Unknown instruction {}", a)
             }
         }).collect()
+}
+
+fn gcd(a: i64, b: i64) -> i64 {
+    if b == 0 {
+        a
+    } else {
+        gcd(b, a % b)
+    }
+}
+
+fn lcm(a: i64, b: i64) -> i64 {
+    a / gcd(a, b) * b
 }
