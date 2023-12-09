@@ -11,13 +11,21 @@ pub fn run() {
 
     let predictions = input.iter()
         .map(|x| (x, extrapolate(x.clone())))
-        .map(|(x, extrapolated)| (x, predict_next(extrapolated)))
+        .map(|(x, extrapolated)| (x, predict_before(extrapolated)))
         .collect::<Vec<(&HistoryEntry, NextValue)>>();
 
     let sum = predictions.iter().map(|x| x.1).sum::<i64>();
 
     println!("{:?}", predictions);
     println!("Sum: {:?}", sum);
+}
+
+fn predict_before(extrapolated: Vec<Extrapolated>) -> i64 {
+    extrapolated.iter().rev().fold(0, |acc, x| {
+        let first = x.iter().nth(0).unwrap();
+
+        first - acc
+    })
 }
 
 fn predict_next(extrapolated: Vec<Extrapolated>) -> i64 {
