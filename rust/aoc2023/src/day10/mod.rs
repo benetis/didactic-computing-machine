@@ -1,4 +1,5 @@
 use std::collections::{HashSet, VecDeque};
+use std::fmt::{Display, Formatter};
 use std::hash::Hash;
 use crate::input::load_input;
 
@@ -23,6 +24,23 @@ enum TileType {
     /* . */
     Start,
     /* S */
+}
+
+impl Display for TileType {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        let c = match self {
+            TileType::TB => '|',
+            TileType::RL => '-',
+            TileType::TR => 'L',
+            TileType::TL => 'J',
+            TileType::BL => '7',
+            TileType::BR => 'F',
+            TileType::Ground => '.',
+            TileType::Start => 'S',
+        };
+
+        write!(f, "{}", c)
+    }
 }
 
 enum Side {
@@ -125,21 +143,51 @@ impl TileType {
 pub fn run() {
     let input_str = load_input("10");
     let grid = parse_grid(input_str);
+
     let start = find_start(&grid);
     let unreachable = 0;
 
     println!("Start: {:?}", start);
 
     let mut distances = vec![vec![unreachable; grid[0].len()]; grid.len()];
-    let mut visited: HashSet<Point> = HashSet::new();
-    dfs(&grid, start, &mut distances, &mut visited, 0);
+    let mut part_of_loop: HashSet<Point> = HashSet::new();
+    dfs(&grid, start, &mut distances, &mut part_of_loop, 0);
 
-    println!("Visited: {:?}", visited);
+    println!("Total: {:?}", count_intersections(&grid, &part_of_loop));
+}
 
-    distances.iter().for_each(|x| println!("{:?}", x));
+fn count_intersections(grid: &Grid, part_of_loop: &HashSet<Point>) -> usize {
+    let mut total = 0;
 
-    let max = distances.iter().flatten().max().map(|x| (*x +1) / 2);
-    println!("Max distance: {:?}", max.unwrap_or(-1));
+    let mut debug = vec![];
+
+    for (y, row) in grid.iter().enumerate() {
+        for (x, _) in row.iter().enumerate() {
+            if part_of_loop.contains(&(x, y)) {
+                continue;
+            }
+
+            if inside_loop(grid, (x, y), part_of_loop.clone()) {
+                total += 1;
+                debug.push((x, y));
+            }
+        }
+    }
+
+    grid.iter().enumerate().for_each(|(y, row)| {
+        row.iter().enumerate().for_each(|(x, _)| {
+            if debug.contains(&(x, y)) {
+                print!("X");
+            } else if part_of_loop.contains(&(x, y)) {
+                print!("O");
+            } else {
+                print!("{}", grid[y][x]);
+            }
+        });
+        println!();
+    });
+
+    total
 }
 
 fn dfs(grid: &Grid, current: Point, distances: &mut Vec<Vec<i32>>, visited: &mut HashSet<Point>, distance: i32) {
@@ -158,6 +206,47 @@ fn dfs(grid: &Grid, current: Point, distances: &mut Vec<Vec<i32>>, visited: &mut
         }
     }
 }
+
+fn inside_loop(grid: &Grid, start: Point, part_of_loop: HashSet<Point>) -> bool {
+    let mut count = 0;
+    let mut x: i32 = start.0 as i32;
+    let mut y: usize = start.1;
+
+    //check left
+    while x > 0 {
+        x -= 1;
+
+        let is_part_of_loop = part_of_loop.contains(&(x as usize, y));
+
+        if !is_part_of_loop {
+            continue;
+        }
+
+        match grid[y][x as usize] {
+
+            TileType::TB => {
+                count += 1;
+            }
+            TileType::RL => {}
+            TileType::TR => {}
+            TileType::TL => {}
+            TileType::BL => {
+                count += 1;
+            }
+            TileType::BR => {
+                count += 1;
+            }
+            TileType::Ground => {}
+            TileType::Start => {
+                count += 1;
+            }
+        }
+    }
+
+    // if odd – inside
+    !(count % 2 == 0)
+}
+
 
 fn connecting_pipes(point: Point, grid: &Grid) -> Vec<Point> {
     let sides_to_check = Side::all_sides();
