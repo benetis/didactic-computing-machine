@@ -1,4 +1,4 @@
-
+#![allow(warnings)]
 use crate::input::load_input;
 
 type HistoryEntry = Vec<i64>;
