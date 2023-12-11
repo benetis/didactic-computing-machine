@@ -43,24 +43,16 @@ pub fn run() {
 }
 
 fn expand_galaxies(all_galaxies: Vec<Point>, expansion_cols: &Vec<usize>, expansion_rows: &Vec<usize>) -> Vec<Point> {
-    let expansion_rate = 2;
+    let expansion_rate = 100;
 
-    all_galaxies.iter().map(|point| {
-        let mut expanded_point = point.clone();
+    all_galaxies.iter().map(|&point| {
+        let cols_crossed = expansion_cols.iter().filter(|&&col| point.0 >= col as i64).count();
+        let rows_crossed = expansion_rows.iter().filter(|&&row| point.1 >= row as i64).count();
 
-        for col in expansion_cols.iter() {
-            if point.0 > *col as i64 {
-                expanded_point.0 += (expansion_rate - 1);
-            }
-        }
+        let expanded_x = point.0 + cols_crossed as i64 * (expansion_rate - 1);
+        let expanded_y = point.1 + rows_crossed as i64 * (expansion_rate - 1);
 
-        for row in expansion_rows.iter() {
-            if point.1 > *row as i64 {
-                expanded_point.1 += (expansion_rate - 1);
-            }
-        }
-
-        expanded_point
+        (expanded_x, expanded_y)
     }).collect::<Vec<Point>>()
 }
 
@@ -100,40 +92,16 @@ fn print_universe(universe: &Universe) {
 }
 
 fn expansion_cols(universe: &Universe) -> Vec<usize> {
-    let col_len = universe[0].len();
-    let mut empty_cols: Vec<usize> = (0..col_len)
-        .enumerate()
-        .filter_map(|(idx, col_index)| {
-            if is_column_empty(&universe, col_index) {
-                Some(idx)
-            } else {
-                None
-            }
-        })
-        .collect();
-
-
-    empty_cols.sort();
-
-    empty_cols
+    universe.iter().enumerate()
+        .filter(|(_, row)| !row.contains(&Space::Galaxy))
+        .map(|(i, _)| i)
+        .collect()
 }
 
 fn expansion_rows(universe: &Universe) -> Vec<usize> {
-    let mut empty_rows: Vec<usize> = universe
-        .iter()
-        .enumerate()
-        .filter_map(|(idy, row)| {
-            if row.iter().all(|space| *space == Space::Empty) {
-                Some(idy)
-            } else {
-                None
-            }
-        })
-        .collect();
-
-    empty_rows.sort();
-
-    empty_rows
+    (0..universe[0].len())
+        .filter(|&j| !universe.iter().any(|row| row[j] == Space::Galaxy))
+        .collect()
 }
 
 fn is_column_empty(universe: &[Vec<Space>], col_index: usize) -> bool {
