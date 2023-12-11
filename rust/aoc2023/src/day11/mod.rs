@@ -93,14 +93,14 @@ fn print_universe(universe: &Universe) {
 
 fn expansion_cols(universe: &Universe) -> Vec<usize> {
     universe.iter().enumerate()
-        .filter(|(_, row)| !row.contains(&Space::Galaxy))
-        .map(|(i, _)| i)
+        .filter(|(_, col)| !col.contains(&Space::Galaxy))
+        .map(|(idx, _)| idx)
         .collect()
 }
 
 fn expansion_rows(universe: &Universe) -> Vec<usize> {
     (0..universe[0].len())
-        .filter(|&j| !universe.iter().any(|row| row[j] == Space::Galaxy))
+        .filter(|&idx| !universe.iter().any(|row| row[idx] == Space::Galaxy))
         .collect()
 }
 
