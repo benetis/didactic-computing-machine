@@ -43,7 +43,7 @@ pub fn run() {
 }
 
 fn expand_galaxies(all_galaxies: Vec<Point>, expansion_cols: &Vec<usize>, expansion_rows: &Vec<usize>) -> Vec<Point> {
-    let expansion_rate = 100;
+    let expansion_rate = 1000_000;
 
     all_galaxies.iter().map(|&point| {
         let cols_crossed = expansion_cols.iter().filter(|&&col| point.0 >= col as i64).count();
