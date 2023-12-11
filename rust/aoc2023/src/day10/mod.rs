@@ -1,3 +1,4 @@
+#![allow(warnings)]
 use std::collections::{HashSet, VecDeque};
 use std::fmt::{Display, Formatter};
 use std::hash::Hash;
