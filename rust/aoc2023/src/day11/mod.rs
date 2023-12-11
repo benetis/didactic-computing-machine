@@ -11,32 +11,64 @@ enum Space {
 }
 
 type Universe = Vec<Vec<Space>>;
-type Point = (usize, usize);
+type Point = (i64, i64);
 
 pub fn run() {
     let input_str = load_input("11");
     let space = input_str.iter().map(|x| parse_row(x.clone())).collect::<Vec<Vec<Space>>>();
 
-    let expanded = expand_universe(space);
+    let expansion_cols = expansion_cols(&space);
+    let expansion_rows = expansion_rows(&space);
 
-    print_universe(&expanded);
+    println!("Expansion cols: {:?}", expansion_cols);
+    println!("Expansion rows: {:?}", expansion_rows);
 
-    let all_galaxies = find_all_galaxies(&expanded);
-    let unique_pairs = all_galaxies.iter().combinations(2).collect::<Vec<Vec<&Point>>>();
+    let all_galaxies = find_all_galaxies(&space);
+
+    println!("All galaxies: {:?}", all_galaxies);
+
+    let expanded_galaxies = expand_galaxies(all_galaxies, &expansion_cols, &expansion_rows);
+
+    println!("Expanded galaxies: {:?}", expanded_galaxies);
+
+    let unique_pairs = expanded_galaxies.iter().combinations(2).collect::<Vec<Vec<&Point>>>();
 
     let distances = unique_pairs.iter().fold(0, |acc, pair| {
         let distance = manhattan_distance(*pair[0], *pair[1]);
+        println!("Distance between {:?} and {:?}: {}", pair[0], pair[1], distance);
         acc + distance
     });
 
     println!("Total distance: {}", distances);
 }
 
+fn expand_galaxies(all_galaxies: Vec<Point>, expansion_cols: &Vec<usize>, expansion_rows: &Vec<usize>) -> Vec<Point> {
+    let expansion_rate = 2;
+
+    all_galaxies.iter().map(|point| {
+        let mut expanded_point = point.clone();
+
+        for col in expansion_cols.iter() {
+            if point.0 > *col as i64 {
+                expanded_point.0 += (expansion_rate - 1);
+            }
+        }
+
+        for row in expansion_rows.iter() {
+            if point.1 > *row as i64 {
+                expanded_point.1 += (expansion_rate - 1);
+            }
+        }
+
+        expanded_point
+    }).collect::<Vec<Point>>()
+}
+
 fn manhattan_distance(p1: Point, p2: Point) -> i64 {
-    let x1 = p1.0 as i64;
-    let y1 = p1.1 as i64;
-    let x2 = p2.0 as i64;
-    let y2 = p2.1 as i64;
+    let x1 = p1.0;
+    let y1 = p1.1;
+    let x2 = p2.0;
+    let y2 = p2.1;
 
     (x2 - x1).abs() + (y2 - y1).abs()
 }
@@ -47,7 +79,7 @@ fn find_all_galaxies(universe: &Universe) -> Vec<Point> {
     for (row_idx, row) in universe.iter().enumerate() {
         for (col_idx, space) in row.iter().enumerate() {
             if *space == Space::Galaxy {
-                all_galaxies.push((row_idx, col_idx));
+                all_galaxies.push((row_idx as i64, col_idx as i64));
             }
         }
     }
@@ -67,32 +99,41 @@ fn print_universe(universe: &Universe) {
     });
 }
 
-fn expand_universe(mut universe: Vec<Vec<Space>>) -> Vec<Vec<Space>> {
-    let empty_rows: Vec<bool> = universe
-        .iter()
-        .map(|row| row.iter().all(|space| *space == Space::Empty))
-        .collect();
-
+fn expansion_cols(universe: &Universe) -> Vec<usize> {
     let col_len = universe[0].len();
-    let empty_cols: Vec<bool> = (0..col_len)
-        .map(|col_index| is_column_empty(&universe, col_index))
+    let mut empty_cols: Vec<usize> = (0..col_len)
+        .enumerate()
+        .filter_map(|(idx, col_index)| {
+            if is_column_empty(&universe, col_index) {
+                Some(idx)
+            } else {
+                None
+            }
+        })
         .collect();
 
-    for (idx, &is_empty) in empty_rows.iter().enumerate().rev() {
-        if is_empty {
-            universe.insert(idx, universe[idx].clone());
-        }
-    }
 
-    for (idx, &is_empty) in empty_cols.iter().enumerate().rev() {
-        if is_empty {
-            for row in universe.iter_mut() {
-                row.insert(idx, Space::Empty);
+    empty_cols.sort();
+
+    empty_cols
+}
+
+fn expansion_rows(universe: &Universe) -> Vec<usize> {
+    let mut empty_rows: Vec<usize> = universe
+        .iter()
+        .enumerate()
+        .filter_map(|(idy, row)| {
+            if row.iter().all(|space| *space == Space::Empty) {
+                Some(idy)
+            } else {
+                None
             }
-        }
-    }
+        })
+        .collect();
 
-    universe
+    empty_rows.sort();
+
+    empty_rows
 }
 
 fn is_column_empty(universe: &[Vec<Space>], col_index: usize) -> bool {
