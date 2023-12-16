@@ -250,10 +250,33 @@ pub fn run() {
     let input_str = load_input("16");
     let input = parse_input(input_str);
 
-    // println!("Input:\n{}", input);
-    let laser_result = input.shoot_laser(Point { x: 0, y: 0 }, Direction::Right);
+    // Part1
+    // let laser_result = input.shoot_laser(Point { x: 0, y: 0 }, Direction::Right);
 
-    println!("Energised cells: {:?}", laser_result.energised_cells.len());
+    let all_laser_results = get_all_edges(&input).par_iter().map(|(point, direction)| {
+        input.shoot_laser(point.clone(), direction.clone())
+    }).collect::<Vec<LaserResult>>();
+
+    let most_energised = all_laser_results.iter().max_by(|a, b| a.energised_cells.len().cmp(&b.energised_cells.len())).unwrap();
+
+    println!("Energised cells: {:?}", most_energised.energised_cells.len());
+}
+
+fn get_all_edges(grid: &Grid) -> Vec<(Point, Direction)> {
+    let (min, max) = grid.get_boundaries();
+
+    let top = (min.x..=max.x).map(|x| Point { x, y: min.y }).collect::<Vec<Point>>();
+    let bottom = (min.x..=max.x).map(|x| Point { x, y: max.y }).collect::<Vec<Point>>();
+    let left = (min.y..=max.y).map(|y| Point { x: min.x, y }).collect::<Vec<Point>>();
+    let right = (min.y..=max.y).map(|y| Point { x: max.x, y }).collect::<Vec<Point>>();
+
+    let mut all_edges = Vec::new();
+    all_edges.extend(top.iter().map(|x| (x.clone(), Direction::Down)));
+    all_edges.extend(bottom.iter().map(|x| (x.clone(), Direction::Up)));
+    all_edges.extend(left.iter().map(|x| (x.clone(), Direction::Right)));
+    all_edges.extend(right.iter().map(|x| (x.clone(), Direction::Left)));
+
+    all_edges
 }
 
 fn parse_input(input: Vec<String>) -> Grid {
