@@ -1,3 +1,4 @@
+#![allow(warnings)]
 use std::fmt::Display;
 use std::hash::Hash;
 use itertools::Itertools;
