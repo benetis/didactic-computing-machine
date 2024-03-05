@@ -1,0 +1,16 @@
+version: '3'
+
+tasks:
+  build:
+    cmds:
+      - go build -v -o ./bin/pocket ./cmd/executor
+    sources:
+      - cmd/executor/**/*.go
+    generates:
+      - ./bin/executor
+    desc: Build the project
+  run:
+    deps: [ build ]
+    cmds:
+      - ./bin/pocket run
+    desc: Build and run the project
