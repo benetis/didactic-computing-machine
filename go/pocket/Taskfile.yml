@@ -14,3 +14,8 @@ tasks:
     cmds:
       - ./bin/pocket run
     desc: Build and run the project
+  tar:
+    deps: [ build ]
+    cmds:
+      - ./bin/pocket tar ./examples/simple_go
+    desc: Create a tarball of the project

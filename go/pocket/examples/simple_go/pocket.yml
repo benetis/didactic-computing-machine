@@ -1,0 +1,7 @@
+steps:
+  - build
+build:
+  image: golang:1.13
+  cmds:
+    - go build main
+    - go run main
