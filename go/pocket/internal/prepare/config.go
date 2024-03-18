@@ -6,7 +6,8 @@ import (
 )
 
 type Config struct {
-	Steps map[string]Step `yaml:"steps"`
+	StepsOrder []string         `yaml:"steps"`
+	Steps      map[string]*Step `yaml:"-"`
 }
 
 type Step struct {
@@ -20,11 +21,39 @@ func loadConfig(path string) (*Config, error) {
 		return nil, err
 	}
 
-	var config Config
-	err = yaml.Unmarshal(fileBytes, &config)
+	var rawConfig struct {
+		StepsOrder []string               `yaml:"steps"`
+		Steps      map[string]interface{} `yaml:",inline"`
+	}
+	err = yaml.Unmarshal(fileBytes, &rawConfig)
 	if err != nil {
 		return nil, err
 	}
 
-	return &config, nil
+	config := &Config{
+		StepsOrder: rawConfig.StepsOrder,
+		Steps:      make(map[string]*Step),
+	}
+
+	for _, stepName := range rawConfig.StepsOrder {
+		stepData, ok := rawConfig.Steps[stepName]
+		if !ok {
+			panic("Step not found in the configuration")
+		}
+
+		stepBytes, err := yaml.Marshal(stepData)
+		if err != nil {
+			return nil, err
+		}
+
+		var step Step
+		err = yaml.Unmarshal(stepBytes, &step)
+		if err != nil {
+			return nil, err
+		}
+
+		config.Steps[stepName] = &step
+	}
+
+	return config, nil
 }

@@ -12,7 +12,7 @@ tasks:
   run:
     deps: [ build ]
     cmds:
-      - ./bin/pocket run
+      - ./bin/pocket run ./examples/simple_go
     desc: Build and run the project
   tar:
     deps: [ build ]

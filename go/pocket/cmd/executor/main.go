@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"pocket/internal/prepare"
 )
 
@@ -16,7 +17,14 @@ func main() {
 
 	switch command {
 	case "run":
+		if len(os.Args) < 3 {
+			fmt.Println("Usage: pocket run <path>")
+			os.Exit(1)
+		}
+		pathStr := os.Args[2]
+		path := filepath.FromSlash(pathStr)
 		fmt.Println("Running job...")
+		prepare.Run(path)
 	case "tar":
 		if len(os.Args) < 3 {
 			fmt.Println("Usage: pocket tar <path>")
