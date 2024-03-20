@@ -60,7 +60,7 @@ func executeStep(step Step, workingDir string) error {
 		return err
 	}
 
-	if err := cli.ContainerStart(ctx, resp.ID, types.ContainerStartOptions{}); err != nil {
+	if err := cli.ContainerStart(ctx, resp.ID, container.StartOptions{}); err != nil {
 		return err
 	}
 
@@ -73,13 +73,13 @@ func executeStep(step Step, workingDir string) error {
 	case <-statusCh:
 	}
 
-	out, err := cli.ContainerLogs(ctx, resp.ID, types.ContainerLogsOptions{ShowStdout: true, ShowStderr: true})
+	out, err := cli.ContainerLogs(ctx, resp.ID, container.LogsOptions{ShowStdout: true, ShowStderr: true})
 	if err != nil {
 		return err
 	}
 	stdcopy.StdCopy(os.Stdout, os.Stderr, out)
 
-	defer cli.ContainerRemove(ctx, resp.ID, types.ContainerRemoveOptions{
+	defer cli.ContainerRemove(ctx, resp.ID, container.RemoveOptions{
 		Force: true,
 	})
 
