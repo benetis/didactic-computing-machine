@@ -1,4 +1,4 @@
-package internal
+package loadbalancer
 
 import (
 	"io"
@@ -8,37 +8,38 @@ import (
 	"sync/atomic"
 )
 
-type LoadBalancer struct {
+type Container struct {
 	backendURLs []string
 	counter     uint32
 }
 
-func NewLoadBalancer(backendURLs []string) *LoadBalancer {
-	return &LoadBalancer{
+func NewLoadBalancer(backendURLs []string) *Container {
+	return &Container{
 		backendURLs: backendURLs,
 		counter:     0,
 	}
 }
 
-func (lb *LoadBalancer) nextRoundRobin() string {
+func (lb *Container) nextRoundRobin() string {
 	index := atomic.AddUint32(&lb.counter, 1)
 	robinIndex := (int(index) - 1) % len(lb.backendURLs)
 
 	return lb.backendURLs[robinIndex]
 }
 
-func (lb *LoadBalancer) HandleRequest(w http.ResponseWriter, r *http.Request) {
-	backend := lb.nextRoundRobin()
+func (lb *Container) HandleRequest(w http.ResponseWriter, r *http.Request) string {
+	backendURL := lb.nextRoundRobin()
 
-	backendURL, err := url.Parse(backend)
+	parsedURL, err := url.Parse(backendURL)
 	if err != nil {
 		http.Error(w, "Invalid backend URL", http.StatusInternalServerError)
 		log.Printf("Error parsing backend URL: %v", err)
-		return
+		return "error-"
 	}
-	backendURL.Path = r.URL.Path
+	parsedURL.Path = r.URL.Path
 
-	forwardRequest(w, r, backendURL.String())
+	forwardRequest(w, r, parsedURL.String())
+	return backendURL
 }
 
 func forwardRequest(w http.ResponseWriter, r *http.Request, destinationURL string) {

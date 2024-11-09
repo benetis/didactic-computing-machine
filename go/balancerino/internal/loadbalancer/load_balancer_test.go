@@ -1,4 +1,4 @@
-package internal
+package loadbalancer
 
 import (
 	"github.com/stretchr/testify/assert"

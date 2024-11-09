@@ -1,13 +1,14 @@
 package main
 
 import (
-	"balancerino/internal"
+	"balancerino/internal/loadbalancer"
 	"flag"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
 	"strings"
+	"time"
 )
 
 func main() {
@@ -22,9 +23,17 @@ func main() {
 	}
 
 	backends := strings.Split(*backendsStr, ",")
-	lb := internal.NewLoadBalancer(backends)
-
-	http.HandleFunc("/", lb.HandleRequest)
+	lb := loadbalancer.NewLoadBalancer(backends)
+	metrics := loadbalancer.NewMetrics()
+	http.HandleFunc("/", metrics.WrapHttpHandler(lb))
 	fmt.Printf("Load Balancer started on port %s, distributing to backendURLs: %v\n", *port, backends)
+
+	go func() {
+		for {
+			metrics.ReportMetrics()
+			<-time.After(5 * time.Second)
+		}
+	}()
+
 	log.Fatal(http.ListenAndServe(":"+*port, nil))
 }
