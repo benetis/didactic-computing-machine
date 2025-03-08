@@ -8,6 +8,7 @@ import (
 	. "github.com/smartystreets/goconvey/convey"
 	"property/model"
 	"property/repository"
+	"property/test/factory"
 	"testing"
 )
 
@@ -29,18 +30,25 @@ func TestTicketIntegration(t *testing.T) {
 
 	Convey("Ticket database integration tests", t, func() {
 		So(func(ticket model.Ticket) bool {
-			if err := repo.Save(ticket); err != nil {
-				t.Logf("Failed to save: %v", err)
-				return false
-			}
+			err := repo.Save(ticket)
+			So(err, ShouldBeNil)
 
 			retrieved, err := repo.GetByID(ticket.ID)
-			if err != nil {
-				t.Logf("Failed to retrieve: %v", err)
-				return false
-			}
+			So(err, ShouldBeNil)
 
 			return *retrieved == ticket
 		}, gc.ShouldSucceedForAll, genTicket)
+	})
+
+	Convey("With factory instead of generator", t, func() {
+		ticket := factory.NewTicket()
+
+		err := repo.Save(ticket)
+		So(err, ShouldBeNil)
+
+		retrieved, err := repo.GetByID(ticket.ID)
+		So(err, ShouldBeNil)
+
+		So(*retrieved, ShouldResemble, ticket)
 	})
 }
