@@ -7,7 +7,6 @@ import (
 	"go/format"
 	"go/parser"
 	"go/token"
-	"log"
 	"os"
 	"strings"
 	"text/template"
@@ -38,21 +37,21 @@ func output(outputFile string, data TemplateData) {
 
 	tmpl, err := template.New("code").Parse(codeTemplate)
 	if err != nil {
-		log.Fatalf("Error parsing template: %v", err)
+		panic(fmt.Errorf("error parsing template: %w", err))
 	}
 	var buf bytes.Buffer
 	if err := tmpl.Execute(&buf, data); err != nil {
-		log.Fatalf("Error executing template: %v", err)
+		panic(fmt.Errorf("error executing template: %w", err))
 	}
 
 	formatted, err := format.Source(buf.Bytes())
 	if err != nil {
-		log.Fatalf("Error formatting generated code: %v", err)
+		panic(fmt.Errorf("error formatting code: %w", err))
 	}
 
 	err = os.WriteFile(outputFile, formatted, 0644)
 	if err != nil {
-		log.Fatalf("Error writing to %s: %v", outputFile, err)
+		panic(fmt.Errorf("error writing output file: %w", err))
 	}
 }
 
