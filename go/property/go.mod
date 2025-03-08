@@ -5,6 +5,7 @@ go 1.24.1
 require (
 	github.com/leanovate/gopter v0.2.11
 	github.com/leanovate/gopter/convey v0.0.0-20240403114541-b641a797febe
+	github.com/mattn/go-sqlite3 v1.14.24
 	github.com/smartystreets/goconvey v1.8.1
 )
 
