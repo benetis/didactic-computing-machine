@@ -4,6 +4,7 @@ import (
 	gc "github.com/leanovate/gopter/convey"
 	. "github.com/smartystreets/goconvey/convey"
 	"property/model"
+	"property/test/factory"
 	"testing"
 )
 
@@ -23,5 +24,17 @@ func TestTicketProperties(t *testing.T) {
 			needsAttention := ticket.RequiresAttention()
 			return needsAttention == (ticket.IsUrgent() || ticket.AgeInDays() > 30)
 		}, gc.ShouldSucceedForAll, TicketGenerator())
+	})
+
+	Convey("Ticket factory tests", t, func() {
+		ticket := factory.NewTicket(func(t *model.Ticket) {
+			t.Priority = 1
+		})
+
+		So(ticket.IsUrgent(), ShouldBeFalse)
+
+		ticket.Priority = 5
+
+		So(ticket.IsUrgent(), ShouldBeTrue)
 	})
 }
