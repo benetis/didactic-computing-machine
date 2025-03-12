@@ -7,7 +7,7 @@ import "fmt"
 type Liter int
 type Meter int
 
-// Simulate: Aircraft
+// @Aircraft
 type Boeing737 struct {
 	Model        string
 	FuelCapacity Liter
@@ -26,7 +26,7 @@ func (b Boeing737) TakeOff() {
 	fmt.Printf("Taking off %s with %d liters of fuel\n", b.Model, b.FuelCapacity)
 }
 
-// Simulate: Aircraft
+// @Aircraft
 type AirbusA320 struct {
 	Model          string
 	PassengerCount int

@@ -27,16 +27,37 @@ type TemplateData struct {
 }
 
 func Generate() {
-	const inputFile = "internal/aircraft/aircraft.go"
+	const folder = "internal/aircraft"
 	const outputFile = "internal/aircraft/aircraft_gen.go"
-	const marker = "Simulate: Aircraft"
+	const marker = "@Aircraft"
 
-	file := loadFile(inputFile)
-	annotations := collectAnnotations(file, marker)
-	definitions := buildAircraftDefinitions(file, annotations)
-	output(outputFile, TemplateData{definitions})
+	files := loadFolder(folder)
+
+	var definitions []AircraftDef
+
+	for _, file := range files {
+		annotations := collectAnnotations(file, marker)
+		defs := buildAircraftDefinitions(file, annotations)
+		definitions = append(definitions, defs...)
+	}
+	output(outputFile, TemplateData{Aircraft: definitions})
 
 	fmt.Printf("Generated %s with %d defintions\n", outputFile, len(definitions))
+}
+
+func loadFolder(folder string) []*ast.File {
+	fset := token.NewFileSet()
+	pkgs, err := parser.ParseDir(fset, folder, nil, parser.ParseComments)
+	if err != nil {
+		panic(fmt.Errorf("failed to parse directory %s: %w", folder, err))
+	}
+	var files []*ast.File
+	for _, pkg := range pkgs {
+		for _, file := range pkg.Files {
+			files = append(files, file)
+		}
+	}
+	return files
 }
 
 func output(outputFile string, data TemplateData) {
@@ -186,14 +207,4 @@ func collectAnnotations(file *ast.File, marker string) map[string]string {
 	}
 
 	return annotated
-}
-
-func loadFile(inputFile string) *ast.File {
-	fset := token.NewFileSet()
-	file, err := parser.ParseFile(fset, inputFile, nil, parser.ParseComments)
-	if err != nil {
-		panic(fmt.Errorf("failed to parse input file: %w", err))
-	}
-
-	return file
 }
