@@ -8,24 +8,33 @@ import (
 	"go/parser"
 	"go/token"
 	"os"
+	"strconv"
 	"strings"
 	"text/template"
 )
 
+const ShowFunc = "Show"
+
+type AircraftDef struct {
+	Type string // the concrete type (e.g. Boeing737)
+	Show string // the value returned by Show(), e.g. "boeing_737". Used for encoding and decoding.
+}
+
 type TemplateData struct {
-	Types []string
+	Aircraft []AircraftDef
 }
 
 func Generate() {
-	const inputFile = "internal/aircraft.go"
-	const outputFile = "internal/aircraft_gen.go"
+	const inputFile = "internal/aircraft/aircraft.go"
+	const outputFile = "internal/aircraft/aircraft_gen.go"
 	const marker = "Simulate: Aircraft"
 
 	file := loadFile(inputFile)
-	types := collectAnnotations(file, marker)
-	output(outputFile, types)
+	annotations := collectAnnotations(file, marker)
+	definitions := buildAircraftDefinitions(file, annotations)
+	output(outputFile, TemplateData{definitions})
 
-	fmt.Printf("Generated %s with %d types\n", outputFile, len(types.Types))
+	fmt.Printf("Generated %s with %d defintions\n", outputFile, len(definitions))
 }
 
 func output(outputFile string, data TemplateData) {
@@ -55,8 +64,49 @@ func output(outputFile string, data TemplateData) {
 	}
 }
 
-func collectAnnotations(file *ast.File, marker string) TemplateData {
-	types := make([]string, 0)
+func buildAircraftDefinitions(file *ast.File, annotated map[string]string) []AircraftDef {
+	// search for the ShowFunc() method implementations for the annotated types.
+	for _, decl := range file.Decls {
+		funcDecl, ok := decl.(*ast.FuncDecl)
+		if !ok || funcDecl.Recv == nil || funcDecl.Name.Name != ShowFunc {
+			continue
+		}
+		if len(funcDecl.Recv.List) == 0 {
+			continue
+		}
+
+		var typeName string
+		switch expr := funcDecl.Recv.List[0].Type.(type) {
+		case *ast.StarExpr:
+			if ident, ok := expr.X.(*ast.Ident); ok {
+				typeName = ident.Name
+			}
+		case *ast.Ident:
+			typeName = expr.Name
+		}
+
+		if _, exists := annotated[typeName]; exists {
+			if funcDecl.Body != nil && len(funcDecl.Body.List) > 0 {
+				if retStmt, ok := funcDecl.Body.List[0].(*ast.ReturnStmt); ok && len(retStmt.Results) > 0 {
+					if basicLit, ok := retStmt.Results[0].(*ast.BasicLit); ok && basicLit.Kind == token.STRING {
+						if key, err := strconv.Unquote(basicLit.Value); err == nil {
+							annotated[typeName] = key
+						}
+					}
+				}
+			}
+		}
+	}
+
+	var defs []AircraftDef
+	for typ, showDef := range annotated {
+		defs = append(defs, AircraftDef{Type: typ, Show: showDef})
+	}
+	return defs
+}
+
+func collectAnnotations(file *ast.File, marker string) map[string]string {
+	annotated := map[string]string{}
 	for _, decl := range file.Decls {
 		genDecl, ok := decl.(*ast.GenDecl)
 		if !ok || genDecl.Tok != token.TYPE {
@@ -76,7 +126,7 @@ func collectAnnotations(file *ast.File, marker string) TemplateData {
 				for _, spec := range genDecl.Specs {
 					typeSpec, ok := spec.(*ast.TypeSpec)
 					if ok {
-						types = append(types, typeSpec.Name.Name)
+						annotated[typeSpec.Name.Name] = typeSpec.Name.Name
 					}
 				}
 			}
@@ -84,7 +134,7 @@ func collectAnnotations(file *ast.File, marker string) TemplateData {
 
 	}
 
-	return TemplateData{Types: types}
+	return annotated
 }
 
 func loadFile(inputFile string) *ast.File {

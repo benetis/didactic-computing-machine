@@ -5,11 +5,12 @@ package aircraft
 
 type Aircraft interface {
 	TakeOff()
+	Show() string
 }
 
 var AircraftRegistry = map[string]func() Aircraft{
-{{- range .Types }}
-	"{{ . }}": func() Aircraft { return {{ . }}{} },
+{{- range .Aircraft }}
+	"{{ .Show }}": func() Aircraft { return {{ .Type }}{} },
 {{- end }}
 }
 

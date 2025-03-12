@@ -3,11 +3,12 @@ package aircraft
 
 type Aircraft interface {
 	TakeOff()
+	Show() string
 }
 
 var AircraftRegistry = map[string]func() Aircraft{
-	"Boeing737":  func() Aircraft { return Boeing737{} },
-	"AirbusA320": func() Aircraft { return AirbusA320{} },
+	"boeing_737":  func() Aircraft { return Boeing737{} },
+	"airbus_a320": func() Aircraft { return AirbusA320{} },
 }
 
 func NewAircraft(typeName string) Aircraft {

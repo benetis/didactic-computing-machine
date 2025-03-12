@@ -14,6 +14,10 @@ type Boeing737 struct {
 	RunwayLength Meter
 }
 
+func (b Boeing737) Show() string {
+	return "boeing_737"
+}
+
 func (b Boeing737) TakeOff() {
 	fmt.Printf("Taking off %s with %d liters of fuel\n", b.Model, b.FuelCapacity)
 }
@@ -27,4 +31,8 @@ type AirbusA320 struct {
 
 func (a AirbusA320) TakeOff() {
 	fmt.Printf("Taking off %s with %d passengers\n", a.Model, a.PassengerCount)
+}
+
+func (a AirbusA320) Show() string {
+	return "airbus_a320"
 }
