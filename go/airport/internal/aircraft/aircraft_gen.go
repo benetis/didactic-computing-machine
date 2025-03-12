@@ -23,3 +23,10 @@ func NewAircraft(typeName string) Aircraft {
 	}
 	return nil
 }
+
+func NewAircraftByDB(db uint16) Aircraft {
+	if factory, ok := AircraftDBRegistry[db]; ok {
+		return factory()
+	}
+	return nil
+}
