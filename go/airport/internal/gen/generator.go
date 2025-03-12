@@ -8,6 +8,7 @@ import (
 	"go/parser"
 	"go/token"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"text/template"
@@ -17,9 +18,10 @@ const ShowFunc = "Show"
 const DBFunc = "DB"
 
 type AircraftDef struct {
-	Type string // the concrete type (e.g. Boeing737)
-	Show string // the value returned by Show(), e.g. "boeing_737". Used for encoding and decoding.
-	DB   uint16 // database representation for the aircraft type.
+	Package string // the package name where the type is defined.
+	Type    string // the concrete type (e.g. Boeing737).
+	Show    string // the value returned by Show(), e.g. "boeing_737". Used for encoding and decoding.
+	DB      uint16 // database representation for the aircraft type.
 }
 
 type TemplateData struct {
@@ -31,7 +33,7 @@ func Generate() {
 	const outputFile = "internal/aircraft/aircraft_gen.go"
 	const marker = "@Aircraft"
 
-	files := loadFolder(folder)
+	files := loadFolderRecursively(folder)
 
 	var definitions []AircraftDef
 
@@ -45,17 +47,26 @@ func Generate() {
 	fmt.Printf("Generated %s with %d defintions\n", outputFile, len(definitions))
 }
 
-func loadFolder(folder string) []*ast.File {
+func loadFolderRecursively(folder string) []*ast.File {
 	fset := token.NewFileSet()
-	pkgs, err := parser.ParseDir(fset, folder, nil, parser.ParseComments)
-	if err != nil {
-		panic(fmt.Errorf("failed to parse directory %s: %w", folder, err))
-	}
 	var files []*ast.File
-	for _, pkg := range pkgs {
-		for _, file := range pkg.Files {
+
+	err := filepath.Walk(folder, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+
+		if !info.IsDir() && strings.HasSuffix(path, ".go") {
+			file, err := parser.ParseFile(fset, path, nil, parser.ParseComments)
+			if err != nil {
+				return fmt.Errorf("failed to parse file %s: %w", path, err)
+			}
 			files = append(files, file)
 		}
+		return nil
+	})
+	if err != nil {
+		panic(fmt.Errorf("failed to walk directory %s: %w", folder, err))
 	}
 	return files
 }
@@ -89,15 +100,16 @@ func output(outputFile string, data TemplateData) {
 
 func buildAircraftDefinitions(file *ast.File, annotated map[string]string) []AircraftDef {
 	showValues := collectShowDefinitions(file, annotated)
-
 	dbValues := collectDBDefinitions(file)
+	pkg := file.Name.Name
 
 	var defs []AircraftDef
 	for typ := range annotated {
 		defs = append(defs, AircraftDef{
-			Type: typ,
-			Show: showValues[typ],
-			DB:   dbValues[typ],
+			Package: pkg,
+			Type:    typ,
+			Show:    showValues[typ],
+			DB:      dbValues[typ],
 		})
 	}
 	return defs

@@ -11,13 +11,13 @@ type Aircraft interface {
 
 var AircraftRegistry = map[string]func() Aircraft{
 {{- range .Aircraft }}
-	"{{ .Show }}": func() Aircraft { return {{ .Type }}{} },
+	"{{ .Show }}": func() Aircraft { return {{ .Package }}.{{ .Type }}{} },
 {{- end }}
 }
 
 var AircraftDBRegistry = map[uint16]func() Aircraft{
 {{- range .Aircraft }} 
-	{{ .DB }}: func() Aircraft { return {{ .Type }}{} },
+	{{ .DB }}: func() Aircraft { return {{ .Package }}.{{ .Type }}{} },
 {{- end }}
 }
 
