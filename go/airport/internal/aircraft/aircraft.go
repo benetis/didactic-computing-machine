@@ -18,6 +18,10 @@ func (b Boeing737) Show() string {
 	return "boeing_737"
 }
 
+func (b Boeing737) DB() uint16 {
+	return 10
+}
+
 func (b Boeing737) TakeOff() {
 	fmt.Printf("Taking off %s with %d liters of fuel\n", b.Model, b.FuelCapacity)
 }
@@ -35,4 +39,8 @@ func (a AirbusA320) TakeOff() {
 
 func (a AirbusA320) Show() string {
 	return "airbus_a320"
+}
+
+func (a AirbusA320) DB() uint16 {
+	return 5
 }

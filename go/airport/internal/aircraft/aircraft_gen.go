@@ -4,11 +4,17 @@ package aircraft
 type Aircraft interface {
 	TakeOff()
 	Show() string
+	DB() uint16
 }
 
 var AircraftRegistry = map[string]func() Aircraft{
 	"boeing_737":  func() Aircraft { return Boeing737{} },
 	"airbus_a320": func() Aircraft { return AirbusA320{} },
+}
+
+var AircraftDBRegistry = map[uint16]func() Aircraft{
+	10: func() Aircraft { return Boeing737{} },
+	5:  func() Aircraft { return AirbusA320{} },
 }
 
 func NewAircraft(typeName string) Aircraft {

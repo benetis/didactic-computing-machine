@@ -6,11 +6,18 @@ package aircraft
 type Aircraft interface {
 	TakeOff()
 	Show() string
+	DB() uint16
 }
 
 var AircraftRegistry = map[string]func() Aircraft{
 {{- range .Aircraft }}
 	"{{ .Show }}": func() Aircraft { return {{ .Type }}{} },
+{{- end }}
+}
+
+var AircraftDBRegistry = map[uint16]func() Aircraft{
+{{- range .Aircraft }} 
+	{{ .DB }}: func() Aircraft { return {{ .Type }}{} },
 {{- end }}
 }
 
