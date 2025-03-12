@@ -12,7 +12,7 @@ type Boeing737 struct {
 	RunwayLength params.Meter
 }
 
-func (b Boeing737) Show() string {
+func (b Boeing737) String() string {
 	return "boeing_737"
 }
 
@@ -21,5 +21,5 @@ func (b Boeing737) DB() uint16 {
 }
 
 func (b Boeing737) TakeOff() {
-	fmt.Printf("Taking off %s with %d liters of fuel\n", b.Show(), b.FuelCapacity)
+	fmt.Printf("Taking off %s with %d liters of fuel\n", b.String(), b.FuelCapacity)
 }

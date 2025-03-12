@@ -8,8 +8,8 @@ import (
 
 type Aircraft interface {
 	TakeOff()
-	Show() string // This cannot be changed unless all encodes, decoders and contracts are changed as well.
-	DB() uint16   // This cannot be changed unless DB data is changed as well.
+	String() string // This cannot be changed unless all encodes, decoders and contracts are changed as well.
+	DB() uint16     // This cannot be changed unless DB data is changed as well.
 }
 
 var AircraftRegistry = map[string]func() Aircraft{

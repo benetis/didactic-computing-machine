@@ -11,9 +11,9 @@ func validateDefinitions(defs []AircraftDef) {
 		}
 		dbMap[def.DB] = def.Type
 
-		if existing, ok := showMap[def.Show]; ok {
-			panic(fmt.Errorf("duplicate %s() definition: Show value %q is defined for both %s and %s", showFunc, def.Show, existing, def.Type))
+		if existing, ok := showMap[def.String]; ok {
+			panic(fmt.Errorf("duplicate %s() definition: String value %q is defined for both %s and %s", showFunc, def.String, existing, def.Type))
 		}
-		showMap[def.Show] = def.Type
+		showMap[def.String] = def.Type
 	}
 }

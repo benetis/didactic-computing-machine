@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 )
 
-const showFunc = "Show"
+const showFunc = "String"
 const dBFunc = "DB"
 const marker = "@Aircraft"
 
@@ -14,7 +14,7 @@ type AircraftDef struct {
 	ImportPath string // the import path of the package where the type is defined.
 	Package    string // the package name where the type is defined.
 	Type       string // the concrete type (e.g. Boeing737).
-	Show       string // the value returned by Show(), e.g. "boeing_737". Used for encoding and decoding.
+	String     string // the value returned by String(), e.g. "boeing_737". Used for encoding and decoding.
 	DB         uint16 // database representation for the aircraft type.
 }
 
@@ -73,7 +73,7 @@ func buildAircraftDefinitions(
 	modulePrefix string,
 	generatedPackageName string,
 ) []AircraftDef {
-	showValues := collectShowDefinitions(pf.File, annotated)
+	showValues := collectStringDefinitions(pf.File, annotated)
 	dbValues := collectDBDefinitions(pf.File)
 	pkg := pf.File.Name.Name
 
@@ -95,7 +95,7 @@ func buildAircraftDefinitions(
 			}(),
 			Package: pkg,
 			Type:    typ,
-			Show:    showValues[typ],
+			String:  showValues[typ],
 			DB:      dbValues[typ],
 		})
 	}

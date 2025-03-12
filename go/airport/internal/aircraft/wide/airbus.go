@@ -8,10 +8,10 @@ type AirbusA330 struct {
 }
 
 func (a AirbusA330) TakeOff() {
-	fmt.Printf("Taking off %s\n", a.Show())
+	fmt.Printf("Taking off %s\n", a.String())
 }
 
-func (a AirbusA330) Show() string {
+func (a AirbusA330) String() string {
 	return "airbus_a330"
 }
 

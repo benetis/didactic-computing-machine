@@ -73,7 +73,7 @@ func collectDBDefinitions(file *ast.File) map[string]uint16 {
 	return dbValues
 }
 
-func collectShowDefinitions(file *ast.File, annotated map[string]string) map[string]string {
+func collectStringDefinitions(file *ast.File, annotated map[string]string) map[string]string {
 	copied := make(map[string]string)
 	for k, v := range annotated {
 		copied[k] = v
