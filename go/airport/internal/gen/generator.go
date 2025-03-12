@@ -6,10 +6,9 @@ import (
 	"path/filepath"
 )
 
-const modulePrefix = "airport"
 const showFunc = "Show"
 const dBFunc = "DB"
-const generatedPackageName = "aircraft"
+const marker = "@Aircraft"
 
 type AircraftDef struct {
 	ImportPath string // the import path of the package where the type is defined.
@@ -37,7 +36,8 @@ type ParsedFile struct {
 func Generate() {
 	const folder = "internal/aircraft"
 	const outputFile = "internal/aircraft/aircraft_gen.go"
-	const marker = "@Aircraft"
+	const generatedPackageName = "aircraft"
+	const modulePrefix = "airport"
 
 	parsedFiles := loadFolderRecursively(folder)
 
@@ -45,7 +45,13 @@ func Generate() {
 
 	for _, parsedFile := range parsedFiles {
 		annotations := collectAnnotations(parsedFile.File, marker)
-		defs := buildAircraftDefinitions(parsedFile, folder, annotations)
+		defs := buildAircraftDefinitions(
+			parsedFile,
+			folder,
+			annotations,
+			modulePrefix,
+			generatedPackageName,
+		)
 		definitions = append(definitions, defs...)
 	}
 
@@ -60,7 +66,13 @@ func Generate() {
 	fmt.Printf("Generated %s with %d defintions\n", outputFile, len(definitions))
 }
 
-func buildAircraftDefinitions(pf ParsedFile, baseFolder string, annotated map[string]string) []AircraftDef {
+func buildAircraftDefinitions(
+	pf ParsedFile,
+	baseFolder string,
+	annotated map[string]string,
+	modulePrefix string,
+	generatedPackageName string,
+) []AircraftDef {
 	showValues := collectShowDefinitions(pf.File, annotated)
 	dbValues := collectDBDefinitions(pf.File)
 	pkg := pf.File.Name.Name
