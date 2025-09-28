@@ -1,0 +1,28 @@
+services:
+  jobmanager:
+    image: flink:2.1.0
+    container_name: flink-jm
+    ports:
+      - "8081:8081"
+    environment:
+      - |
+        FLINK_PROPERTIES=
+        jobmanager.rpc.address: jobmanager
+        taskmanager.numberOfTaskSlots: 2
+    command: jobmanager
+    volumes:
+      - ./target/scala-3.3.6:/opt/flink/usrlib
+
+  taskmanager:
+    image: flink:2.1.0
+    container_name: flink-tm
+    depends_on:
+      - jobmanager
+    environment:
+      - |
+        FLINK_PROPERTIES=
+        jobmanager.rpc.address: jobmanager
+        taskmanager.numberOfTaskSlots: 2
+    command: taskmanager
+    volumes:
+      - ./target/scala-3.3.6:/opt/flink/usrlib
